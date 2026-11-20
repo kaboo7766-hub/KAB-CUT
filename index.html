@@ -1534,8 +1534,12 @@
                 <span class="text-[9px] bg-studio-cyan text-studio-bg font-black px-1.5 py-0.5 rounded">50 VOICES</span>
               </div>
 
-              <textarea id="aiTtsTextInput" rows="2" placeholder="اكتب النص هنا لينطقه الصوت المختار بفخامة..."
-                class="w-full bg-studio-bg border border-studio-border rounded-xl p-2 text-xs text-white focus:border-studio-cyan focus:outline-none">أهلاً بكم في عالم الإبداع، هنا نصنع محتوى يترك أثراً لا يُنسى!</textarea>
+              <textarea id="aiTtsTextInput" rows="4" oninput="updateTtsCharCount(this)" placeholder="اكتب أو الصق النص الذي تريد تحويله إلى مقطع صوتي..."
+                class="w-full bg-studio-bg border border-studio-border rounded-xl p-3 text-sm leading-7 text-white focus:border-studio-cyan focus:outline-none resize-y">أهلاً بكم في عالم الإبداع، هنا نصنع محتوى يترك أثراً لا يُنسى!</textarea>
+              <div class="flex items-center justify-between text-[10px] text-gray-400">
+                <span><i class="fa-solid fa-circle-info text-studio-cyan ml-1"></i>سيتم إنشاء ملف صوتي وإضافته تلقائياً إلى مسار الصوت في التايم لاين.</span>
+                <span id="aiTtsCharCount" class="font-mono text-studio-cyan">0 / 6000</span>
+              </div>
 
               <!-- Voice Categories Filter -->
               <div class="flex flex-wrap gap-1">
@@ -1573,7 +1577,7 @@
               <button id="generateAiVoiceBtn" onclick="generateAiDialectVoice()"
                 class="w-full py-2.5 rounded-xl bg-gradient-to-l from-studio-cyan to-purple-500 text-studio-bg font-extrabold text-xs shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>توليد بصوت: ${activeVoiceObj.name.split('(')[0].trim()}</span>
+                <span>حوّل النص إلى مقطع صوتي — ${activeVoiceObj.name.split('(')[0].trim()}</span>
               </button>
             </div>
 
@@ -3468,6 +3472,15 @@
         view.setInt16(44 + i * 2, pcm16[i], true);
       }
       return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    function updateTtsCharCount(input) {
+      const counter = document.getElementById('aiTtsCharCount');
+      if (counter) {
+        counter.textContent = `${input.value.length.toLocaleString('ar-EG')} / 6000 حرف`;
+        counter.classList.toggle('text-rose-400', input.value.length > 6000);
+        counter.classList.toggle('text-studio-cyan', input.value.length <= 6000);
+      }
     }
 
     async function generateAiDialectVoice() {
