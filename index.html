@@ -1,0 +1,3573 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KAB CUT - استوديو المونتاج الاحترافي</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo, Tajawal, Changa, Amiri, Readex Pro, Lalezar, Marhey, Aref Ruqaa, IBM Plex Sans Arabic, Rubik, Lemonada + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Aref+Ruqaa:wght@700&family=Cairo:wght@400;600;700;800;900&family=Changa:wght@700;800&family=IBM+Plex+Sans+Arabic:wght@600;700&family=Inter:wght@400;600;700;900&family=Lalezar&family=Lemonada:wght@700&family=Marhey:wght@700&family=Readex+Pro:wght@600;700&family=Rubik:wght@700;900&family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Studio Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            mono: ['Inter', 'monospace'],
+          },
+          colors: {
+            studio: {
+              bg: '#0f1115',
+              panel: '#181b21',
+              surface: '#21252e',
+              hover: '#2a2f3a',
+              border: '#2e3440',
+              cyan: '#00e5ff',
+              purple: '#9d4edd',
+              pink: '#ff2a85',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      background-color: #0f1115;
+      color: #f3f4f6;
+      font-family: 'Cairo', sans-serif;
+      overflow: hidden;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #14171c;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2e3440;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00e5ff;
+    }
+
+    /* Range Slider Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #2a2f3a;
+      height: 5px;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00e5ff;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Checkerboard background behind preview canvas */
+    .canvas-backdrop {
+      background-image:
+        linear-gradient(45deg, #161920 25%, transparent 25%),
+        linear-gradient(-45deg, #161920 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #161920 75%),
+        linear-gradient(-45deg, transparent 75%, #161920 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    }
+
+    /* Timeline Grid */
+    .timeline-ruler-bg {
+      background-image: repeating-linear-gradient(
+        to left,
+        #2e3440 0px,
+        #2e3440 1px,
+        transparent 1px,
+        transparent 20px
+      );
+    }
+
+    /* Clip resize handles */
+    .clip-handle {
+      width: 8px;
+      cursor: ew-resize;
+      transition: background-color 0.15s;
+    }
+    .clip-handle:hover {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.4); }
+      50% { box-shadow: 0 0 22px rgba(157, 78, 221, 0.7); }
+    }
+    .brand-glow {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-studio-bg text-gray-100 overflow-hidden">
+
+  <!-- ==================== 1. TOP HEADER BAR ==================== -->
+  <header class="h-14 bg-studio-panel border-b border-studio-border px-3 md:px-5 flex items-center justify-between shrink-0 z-30">
+    <!-- Brand & Project Title -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5 bg-studio-surface px-3 py-1.5 rounded-xl border border-studio-border brand-glow">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-studio-cyan via-blue-500 to-studio-purple flex items-center justify-center text-studio-bg font-black text-sm shadow">
+          <i class="fa-solid fa-scissors"></i>
+        </div>
+        <span class="font-extrabold tracking-wider text-base md:text-lg bg-gradient-to-r from-studio-cyan to-purple-400 bg-clip-text text-transparent font-mono">
+          KAB CUT
+        </span>
+      </div>
+
+      <div class="hidden sm:flex items-center gap-2 bg-studio-surface/60 px-3 py-1.5 rounded-xl border border-studio-border/60">
+        <i class="fa-regular fa-folder-open text-studio-cyan text-xs"></i>
+        <input id="projectTitleInput" type="text" value="مشروع_مونتاج_جديد"
+          class="bg-transparent text-xs md:text-sm font-semibold text-gray-200 focus:outline-none w-32 md:w-44" />
+      </div>
+    </div>
+
+    <!-- Center Quick Settings: Aspect Ratio & Resolution -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <div class="flex items-center gap-1.5 bg-studio-surface px-2.5 py-1.5 rounded-xl border border-studio-border">
+        <i class="fa-solid fa-crop-simple text-studio-cyan text-xs"></i>
+        <select id="aspectRatioSelect" onchange="changeAspectRatio(this.value)"
+          class="bg-transparent text-xs font-semibold text-gray-200 focus:outline-none cursor-pointer">
+          <option value="16:9" class="bg-studio-panel">16:9 يوتيوب</option>
+          <option value="9:16" class="bg-studio-panel">9:16 تيك توك / ريلز</option>
+          <option value="1:1" class="bg-studio-panel">1:1 إنستغرام</option>
+          <option value="4:5" class="bg-studio-panel">4:5 بورتريه</option>
+        </select>
+      </div>
+
+      <div class="hidden md:flex items-center gap-1.5 bg-studio-surface px-2.5 py-1.5 rounded-xl border border-studio-border">
+        <i class="fa-solid fa-film text-purple-400 text-xs"></i>
+        <select id="resolutionSelect" onchange="changeResolution(this.value)"
+          class="bg-transparent text-xs font-semibold text-gray-200 focus:outline-none cursor-pointer font-mono">
+          <option value="1080" class="bg-studio-panel">1080p Full HD</option>
+          <option value="720" class="bg-studio-panel">720p HD</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Right Actions: Demo Preset & Export -->
+    <div class="flex items-center gap-2">
+      <button onclick="loadDemoProject()" title="تحميل مقطع تجريبي جاهز لاختبار المؤثرات"
+        class="flex items-center gap-1.5 bg-studio-surface hover:bg-studio-hover text-studio-cyan border border-studio-cyan/40 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span class="hidden sm:inline">تجربة بمقطع جاهز</span>
+      </button>
+
+      <button onclick="openExportModal()"
+        class="flex items-center gap-2 bg-gradient-to-l from-studio-cyan to-blue-500 hover:opacity-95 text-studio-bg font-extrabold px-4 py-1.5 rounded-xl text-xs md:text-sm shadow-lg shadow-cyan-500/20 transition transform active:scale-95">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        <span>تصدير الفيديو</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== 2. MAIN STUDIO WORKSPACE ==================== -->
+  <main class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+
+    <!-- RIGHT PANEL: Tool Navigation Rail + Dynamic Drawer -->
+    <section class="w-full lg:w-[360px] xl:w-[400px] bg-studio-panel border-b lg:border-b-0 lg:border-l border-studio-border flex flex-col sm:flex-row lg:flex-row shrink-0 h-[36vh] lg:h-auto overflow-hidden">
+      <!-- Vertical Icon Tabs -->
+      <nav class="flex sm:flex-col justify-around sm:justify-start gap-1 p-1.5 bg-[#13161b] border-b sm:border-b-0 sm:border-l border-studio-border shrink-0 overflow-x-auto">
+        <button onclick="switchTab('media')" id="tab-media" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-solid fa-photo-film text-base"></i>
+          <span>الوسائط</span>
+        </button>
+        <button onclick="switchTab('effects')" id="tab-effects" class="nav-tab active flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] bg-studio-surface text-studio-cyan">
+          <i class="fa-solid fa-bolt text-base"></i>
+          <span>المؤثرات</span>
+        </button>
+        <button onclick="switchTab('filters')" id="tab-filters" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-solid fa-circle-half-stroke text-base"></i>
+          <span>الفلاتر</span>
+        </button>
+        <button onclick="switchTab('text')" id="tab-text" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-solid fa-font text-base"></i>
+          <span>النصوص</span>
+        </button>
+        <button onclick="switchTab('stickers')" id="tab-stickers" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-regular fa-face-laugh-beam text-base"></i>
+          <span>الملصقات</span>
+        </button>
+        <button onclick="switchTab('audio')" id="tab-audio" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-solid fa-music text-base"></i>
+          <span>الصوت</span>
+        </button>
+        <button onclick="switchTab('adjust')" id="tab-adjust" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
+          <i class="fa-solid fa-sliders text-base"></i>
+          <span>الضبط</span>
+        </button>
+      </nav>
+
+      <!-- Drawer Content Area -->
+      <div id="drawerContainer" class="flex-1 p-3.5 overflow-y-auto space-y-4">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: Video Preview Canvas & Transport Controls -->
+    <section class="flex-1 flex flex-col bg-studio-bg min-w-0 min-h-0 relative">
+      <!-- Top Preview Info Bar -->
+      <div class="h-9 px-4 flex items-center justify-between border-b border-studio-border/50 text-xs text-gray-400 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>معاينة حية (60 FPS)</span>
+          <span id="activeRatioBadge" class="bg-studio-surface px-2 py-0.5 rounded text-[11px] font-mono text-studio-cyan">16:9</span>
+          <span class="hidden md:inline text-[11px] text-gray-500">| اسحب أي صورة/نص بالماوس، واستخدم العجلة للتكبير والتصغير</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="canvasResolutionLabel" class="font-mono text-[11px]">1920 × 1080</span>
+          <button onclick="toggleFullscreenPreview()" class="hover:text-studio-cyan transition" title="ملء الشاشة">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Container -->
+      <div id="previewWrapper" class="flex-1 flex items-center justify-center p-3 md:p-5 canvas-backdrop overflow-hidden relative">
+        <div id="canvasFrame" class="relative shadow-2xl rounded-xl overflow-hidden border border-studio-border/80 bg-black flex items-center justify-center">
+          <canvas id="studioCanvas" class="block max-w-full max-h-full cursor-move"></canvas>
+        </div>
+
+        <!-- Floating Tip when empty -->
+        <div id="emptyStateOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-studio-bg/85 backdrop-blur-sm p-6 text-center z-10">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-studio-cyan to-studio-purple flex items-center justify-center text-studio-bg text-2xl mb-4 shadow-lg">
+            <i class="fa-solid fa-clapperboard"></i>
+          </div>
+          <h2 class="text-lg md:text-xl font-extrabold text-white mb-1">ابدأ المونتاج الآن في KAB CUT</h2>
+          <p class="text-xs md:text-sm text-gray-400 max-w-md mb-5">
+            قم باستيراد فيديوهاتك وصورك من جهازك، أو اختر من مكتبة الفيديوهات والصور الجاهزة، أو جرب المشروع التفاعلي فوراً!
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <label class="cursor-pointer bg-studio-cyan hover:bg-cyan-300 text-studio-bg font-extrabold px-4 py-2.5 rounded-xl text-xs md:text-sm flex items-center gap-2 transition shadow-lg">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>استيراد فيديو / صورة</span>
+              <input type="file" accept="video/*,image/*" multiple class="hidden" onchange="handleMediaUpload(event)" />
+            </label>
+            <button onclick="loadDemoProject()" class="bg-studio-surface hover:bg-studio-hover border border-studio-border text-white font-bold px-4 py-2.5 rounded-xl text-xs md:text-sm flex items-center gap-2 transition">
+              <i class="fa-solid fa-play text-studio-cyan"></i>
+              <span>تشغيل المقطع التجريبي</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transport Controls Bar -->
+      <div class="h-12 bg-studio-panel border-t border-studio-border px-4 flex items-center justify-between shrink-0">
+        <!-- Timecode -->
+        <div class="flex items-center gap-1.5 font-mono text-xs md:text-sm" dir="ltr">
+          <span id="currentTimeDisplay" class="text-studio-cyan font-bold">00:00:00</span>
+          <span class="text-gray-600">/</span>
+          <span id="totalDurationDisplay" class="text-gray-400">00:15:00</span>
+        </div>
+
+        <!-- Playback Buttons -->
+        <div class="flex items-center gap-2 md:gap-4">
+          <button onclick="seekTo(0)" class="p-2 text-gray-400 hover:text-white transition" title="البداية">
+            <i class="fa-solid fa-backward-fast"></i>
+          </button>
+          <button onclick="stepFrame(-1)" class="p-2 text-gray-400 hover:text-white transition" title="إطار للخلف">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button id="playPauseBtn" onclick="togglePlay()"
+            class="w-9 h-9 rounded-full bg-studio-cyan hover:bg-cyan-300 text-studio-bg flex items-center justify-center shadow-md transition transform active:scale-95">
+            <i id="playPauseIcon" class="fa-solid fa-play text-sm ml-0.5"></i>
+          </button>
+          <button onclick="stepFrame(1)" class="p-2 text-gray-400 hover:text-white transition" title="إطار للأمام">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+          <button onclick="seekTo(state.duration)" class="p-2 text-gray-400 hover:text-white transition" title="النهاية">
+            <i class="fa-solid fa-forward-fast"></i>
+          </button>
+        </div>
+
+        <!-- Master Volume -->
+        <div class="flex items-center gap-2">
+          <button onclick="toggleMute()" id="muteBtn" class="text-gray-300 hover:text-studio-cyan transition text-sm">
+            <i id="volumeIcon" class="fa-solid fa-volume-high"></i>
+          </button>
+          <input type="range" id="masterVolumeSlider" min="0" max="1" step="0.05" value="1"
+            oninput="setMasterVolume(this.value)" class="w-16 md:w-24 hidden sm:block" />
+        </div>
+      </div>
+    </section>
+
+    <!-- LEFT PANEL: Properties Inspector -->
+    <aside class="hidden lg:flex w-[300px] xl:w-[320px] bg-studio-panel border-r border-studio-border flex-col shrink-0 overflow-hidden">
+      <div class="h-10 px-4 border-b border-studio-border flex items-center justify-between">
+        <span class="text-xs font-extrabold text-gray-200 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-studio-cyan"></i>
+          <span>خصائص العنصر المحدد</span>
+        </span>
+        <span id="selectedTypeBadge" class="text-[10px] bg-studio-surface px-2 py-0.5 rounded-full text-gray-400">لا يوجد</span>
+      </div>
+
+      <div id="inspectorContainer" class="flex-1 p-4 overflow-y-auto space-y-4">
+        <div class="text-center text-gray-500 text-xs py-12 space-y-2">
+          <i class="fa-regular fa-hand-pointer text-2xl block text-gray-600"></i>
+          <p>اختر مقطعاً أو نصاً أو مؤثراً من الخط الزمني لتعديل خصائصه وحركته</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==================== 3. BOTTOM MULTI-TRACK TIMELINE ==================== -->
+  <footer class="h-[250px] md:h-[270px] bg-studio-panel border-t border-studio-border flex flex-col shrink-0 select-none z-20">
+    <!-- Timeline Toolbar -->
+    <div class="h-10 bg-[#14171d] border-b border-studio-border px-3 flex items-center justify-between gap-2 overflow-x-auto">
+      <!-- Editing Actions -->
+      <div class="flex items-center gap-1.5">
+        <button onclick="undo()" id="undoBtn" class="px-2.5 py-1 rounded-lg bg-studio-surface hover:bg-studio-hover text-gray-300 text-xs flex items-center gap-1.5 transition" title="تراجع">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button onclick="redo()" id="redoBtn" class="px-2.5 py-1 rounded-lg bg-studio-surface hover:bg-studio-hover text-gray-300 text-xs flex items-center gap-1.5 transition" title="إعادة">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+
+        <div class="h-4 w-[1px] bg-studio-border mx-1"></div>
+
+        <button onclick="splitSelectedClip()" class="px-3 py-1 rounded-lg bg-studio-surface hover:bg-studio-cyan hover:text-studio-bg text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-scissors"></i>
+          <span>تقسيم (Split)</span>
+        </button>
+
+        <button onclick="duplicateSelectedClip()" class="px-2.5 py-1 rounded-lg bg-studio-surface hover:bg-studio-hover text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
+          <i class="fa-regular fa-copy"></i>
+          <span class="hidden sm:inline">تكرار</span>
+        </button>
+
+        <button onclick="deleteSelectedClip()" class="px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold flex items-center gap-1.5 transition">
+          <i class="fa-regular fa-trash-can"></i>
+          <span class="hidden sm:inline">حذف</span>
+        </button>
+      </div>
+
+      <!-- Snap & Zoom Controls -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSnap()" id="snapBtn" class="px-2.5 py-1 rounded-lg bg-studio-cyan/20 text-studio-cyan border border-studio-cyan/40 text-xs font-bold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-magnet"></i>
+          <span class="hidden sm:inline">مغناطيس</span>
+        </button>
+
+        <div class="flex items-center gap-1.5">
+          <i class="fa-solid fa-magnifying-glass-minus text-gray-400 text-xs"></i>
+          <input type="range" id="timelineZoomSlider" min="20" max="140" value="55" oninput="setTimelineZoom(this.value)" class="w-20 md:w-28" />
+          <i class="fa-solid fa-magnifying-glass-plus text-gray-400 text-xs"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Tracks + Scrubber Area -->
+    <div class="flex-1 flex min-h-0 overflow-hidden relative">
+      <!-- Track Headers (Right Side in RTL) -->
+      <div class="w-28 md:w-36 bg-[#14171d] border-l border-studio-border flex flex-col shrink-0 z-10">
+        <!-- Corner spacer for ruler -->
+        <div class="h-7 border-b border-studio-border flex items-center justify-center text-[10px] text-gray-500 font-mono">
+          المسارات
+        </div>
+        <!-- Track Labels -->
+        <div class="flex-1 flex flex-col justify-around py-1">
+          <div class="h-10 px-2.5 flex items-center gap-2 text-xs font-bold text-purple-300 border-b border-studio-border/40">
+            <i class="fa-solid fa-bolt text-purple-400 w-4"></i>
+            <span class="truncate">المؤثرات</span>
+          </div>
+          <div class="h-10 px-2.5 flex items-center gap-2 text-xs font-bold text-amber-300 border-b border-studio-border/40">
+            <i class="fa-solid fa-font text-amber-400 w-4"></i>
+            <span class="truncate">نصوص وملصقات</span>
+          </div>
+          <div class="h-12 px-2.5 flex items-center gap-2 text-xs font-bold text-cyan-300 border-b border-studio-border/40">
+            <i class="fa-solid fa-film text-studio-cyan w-4"></i>
+            <span class="truncate">الفيديو الأساسي</span>
+          </div>
+          <div class="h-10 px-2.5 flex items-center gap-2 text-xs font-bold text-emerald-300">
+            <i class="fa-solid fa-music text-emerald-400 w-4"></i>
+            <span class="truncate">الصوت</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrollable Tracks Canvas -->
+      <div id="timelineScrollArea" class="flex-1 overflow-x-auto overflow-y-hidden relative bg-[#0e1014]" onmousedown="handleTimelineMouseDown(event)">
+        <div id="timelineContent" class="h-full relative" style="width: 1600px;">
+          <!-- Time Ruler -->
+          <div id="timeRuler" class="h-7 bg-[#161920] border-b border-studio-border relative timeline-ruler-bg cursor-pointer">
+            <!-- Ticks injected via JS -->
+          </div>
+
+          <!-- Tracks Container -->
+          <div class="flex-1 flex flex-col justify-around py-1 h-[calc(100%-28px)] relative">
+            <!-- Track 1: Effects -->
+            <div id="track-effects" class="h-10 relative border-b border-studio-border/30 bg-purple-950/10"></div>
+            <!-- Track 2: Overlays (Text & Stickers) -->
+            <div id="track-overlays" class="h-10 relative border-b border-studio-border/30 bg-amber-950/10"></div>
+            <!-- Track 3: Main Video/Image -->
+            <div id="track-video" class="h-12 relative border-b border-studio-border/30 bg-cyan-950/10"></div>
+            <!-- Track 4: Audio -->
+            <div id="track-audio" class="h-10 relative bg-emerald-950/10"></div>
+          </div>
+
+          <!-- Playhead Needle -->
+          <div id="playhead" class="absolute top-0 bottom-0 w-[2px] bg-white z-30 pointer-events-none" style="right: 0px;">
+            <div class="w-3.5 h-3.5 bg-studio-cyan rotate-45 -translate-x-[6px] -translate-y-[2px] rounded-xs shadow-md border border-white"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== 4. EXPORT MODAL & TOAST NOTIFICATION ==================== -->
+  <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-studio-panel border border-studio-border rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-studio-border pb-3">
+        <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-film text-studio-cyan"></i>
+          <span>تصدير الفيديو النهائي - KAB CUT</span>
+        </h3>
+        <button onclick="closeExportModal()" class="text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="exportSettingsView" class="space-y-4">
+        <div class="bg-studio-surface p-3.5 rounded-xl border border-studio-border space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-gray-400">الدقة المختارة:</span>
+            <span id="exportResSummary" class="font-mono font-bold text-studio-cyan">1920 × 1080 (60fps)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">مدة الفيديو:</span>
+            <span id="exportDurSummary" class="font-mono font-bold text-white">00:15:00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">صيغة التصدير:</span>
+            <span class="font-mono font-bold text-emerald-400">WebM / MP4 High Bitrate</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-300 mb-1.5">جودة البث (Bitrate)</label>
+          <select id="exportBitrateSelect" class="w-full bg-studio-surface border border-studio-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+            <option value="8000000">عالية جداً (8 Mbps - موصى به)</option>
+            <option value="5000000">متوسطة (5 Mbps)</option>
+            <option value="2500000">خفيفة (2.5 Mbps)</option>
+          </select>
+        </div>
+
+        <button onclick="startVideoExport()" class="w-full py-3 rounded-xl bg-gradient-to-l from-studio-cyan to-blue-500 text-studio-bg font-extrabold text-sm shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-download"></i>
+          <span>بدء الرندر والتنزيل الآن</span>
+        </button>
+      </div>
+
+      <div id="exportProgressView" class="hidden space-y-4 py-4 text-center">
+        <div class="w-14 h-14 rounded-full border-4 border-studio-surface border-t-studio-cyan animate-spin mx-auto"></div>
+        <div>
+          <h4 class="text-sm font-bold text-white">جاري معالجة وتصدير الفيديو...</h4>
+          <p class="text-xs text-gray-400 mt-1">يرجى عدم إغلاق الصفحة حتى يكتمل التصدير</p>
+        </div>
+        <div class="w-full bg-studio-surface h-3 rounded-full overflow-hidden border border-studio-border">
+          <div id="exportProgressBar" class="h-full bg-gradient-to-l from-studio-cyan to-purple-500 transition-all duration-150" style="width: 0%"></div>
+        </div>
+        <div id="exportPercentText" class="font-mono text-xs font-bold text-studio-cyan">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Non-blocking Toast Message -->
+  <div id="toastBox" class="fixed bottom-6 left-6 bg-studio-surface border border-studio-cyan/50 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2.5 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i class="fa-solid fa-circle-info text-studio-cyan text-sm"></i>
+    <span id="toastMessage">تم تنفيذ الإجراء بنجاح</span>
+  </div>
+
+  <!-- ==================== 5. APPLICATION ENGINE & LOGIC ==================== -->
+  <script>
+    /**
+     * KAB CUT - Web Video Editing Studio Engine
+     * Built with HTML5 Canvas 2D Real-time Pixel/Composite Rendering + Web Audio + MediaRecorder
+     */
+
+    // --- GLOBAL STUDIO STATE ---
+    const state = {
+      isPlaying: false,
+      currentTime: 0,
+      duration: 15,
+      fps: 60,
+      aspectRatio: '16:9',
+      resolutionHeight: 1080,
+      pxPerSec: 55,
+      snapEnabled: true,
+      masterVolume: 1,
+      isMuted: false,
+
+      activeTab: 'effects',
+      fxCategory: 'all',
+      mediaSubTab: 'videos',
+      voiceCategory: 'all',
+      selectedVoiceId: 'sultan_amir',
+      selectedClipId: null,
+      isExporting: false,
+      isRecordingVoice: false,
+      recSeconds: 0,
+
+      clips: [],
+      mediaPool: [],
+      adjustments: {
+        brightness: 100,
+        contrast: 100,
+        saturate: 100,
+        hue: 0,
+        blur: 0,
+        filter: 'none'
+      },
+      history: [],
+      future: [],
+      particles: Array.from({ length: 80 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        r: 1.5 + Math.random() * 3.5,
+        speed: 0.08 + Math.random() * 0.22,
+        phase: Math.random() * Math.PI * 2,
+        hue: Math.floor(Math.random() * 360)
+      }))
+    };
+
+    // Canvas & Rendering Contexts
+    const canvas = document.getElementById('studioCanvas');
+    const ctx = canvas.getContext('2d');
+    const offscreenCanvas = document.createElement('canvas');
+    const offCtx = offscreenCanvas.getContext('2d');
+    const fxBufferCanvas = document.createElement('canvas');
+    const fxBufferCtx = fxBufferCanvas.getContext('2d');
+
+    let lastFrameTimestamp = 0;
+    let draggingCanvasLayer = null;
+    let draggingCanvasMode = null;
+    let dragOffset = { x: 0, y: 0 };
+
+    const GLOBAL_FX_CATEGORIES = [
+      { id: 'all', label: 'الكل (24)' },
+      { id: 'trending', label: 'تريند 🔥' },
+      { id: 'cinema', label: 'سينما 🎬' },
+      { id: 'retro', label: 'ريترو 👾' },
+      { id: 'particles', label: 'جزيئات ✨' }
+    ];
+
+    // --- 50 GLOBAL CREATOR VOICES & REAL-TIME TONE ENHANCERS (RANKED #1 TO #50) ---
+    const VOICE_CATEGORIES = [
+      { id: 'all', label: 'الكل (50 صوت)' },
+      { id: 'vip_arabic', label: 'نخبة العرب 👑' },
+      { id: 'story_doc', label: 'وثائقي وقصص 🎙️' },
+      { id: 'reels_trend', label: 'ريلز وتيك توك 🔥' },
+      { id: 'female_pro', label: 'أصوات نسائية ✨' },
+      { id: 'cinema_fx', label: 'سينما وشخصيات 🎬' }
+    ];
+
+    const GLOBAL_50_VOICES = [
+      // TOP TIER 1-10: VIP ARABIC & SIGNATURE VOICES
+      { rank: 1, id: 'sultan_amir', cat: 'vip_arabic', name: 'سلطان / الأمير (فخم رسمي عميق)', badge: '👑 #1 الأفخم', voiceName: 'Charon', pitch: 0.84, bassGain: 10, presenceGain: 7, echoMix: 0.14, promptPrefix: 'اقرأ النص التالي بصوت رجالي عربي ملكي فخم جداً، عميق، رسمي ووقور كأنه أمير أو سلطان في إعلان فخم: ', desc: 'صوت ملكي عميق للإعلانات والهوية الفخمة' },
+      { rank: 2, id: 'saden_rawi', cat: 'story_doc', name: 'سادن / الراوي (قصصي هادئ وغامض)', badge: '🎙️ #2 الراوي', voiceName: 'Orus', pitch: 0.89, bassGain: 8, presenceGain: 6, echoMix: 0.22, promptPrefix: 'اقرأ النص التالي بأسلوب الراوي القصصي الهادئ والغامض، بنبرة عميقة مشوقة تجذب المستمع من أول كلمة: ', desc: 'سرد قصصي غامض ومشوق لليوتيوب والوثائقيات' },
+      { rank: 3, id: 'athar_intro', cat: 'vip_arabic', name: 'أثر (واضح ومؤثر في المقدمات)', badge: '⚡ #3 المقدمات', voiceName: 'Fenrir', pitch: 0.96, bassGain: 7, presenceGain: 9, echoMix: 0.10, promptPrefix: 'اقرأ النص التالي بصوت واضح جداً، قوي، حاسم ومؤثر في المقدمات التحفيزية وصناعة المحتوى: ', desc: 'قوة ووضوح استثنائي لخطف الانتباه أول 3 ثواني' },
+      { rank: 4, id: 'hams_warm', cat: 'female_pro', name: 'همس (صوت قريب ودافئ)', badge: '✨ #4 الدافئ', voiceName: 'Achernar', pitch: 1.03, bassGain: 6, presenceGain: 6, echoMix: 0.12, promptPrefix: 'اقرأ النص التالي بصوت همس قريب جداً من الميكروفون، دافئ، حنون وهادئ يلامس القلب: ', desc: 'قرب حميمي ودفء إذاعي للخواطر والقصص' },
+      { rank: 5, id: 'eg_luxury_male', cat: 'vip_arabic', name: 'الباشا (مصري فخم إعلاني)', badge: '🇪🇬 #5 مصري فخم', voiceName: 'Alnilam', pitch: 0.88, bassGain: 9, presenceGain: 7, echoMix: 0.12, promptPrefix: 'اقرأ النص التالي باللهجة المصرية الراقية الفخمة، بصوت رجالي رخيم واثق وجذاب: ', desc: 'نبرة مصرية فخمة للبراندات الكبرى' },
+      { rank: 6, id: 'kh_royal_male', cat: 'vip_arabic', name: 'فهد (خليجي ملكي وقور)', badge: '🇸🇦 #6 خليجي فخم', voiceName: 'Gacrux', pitch: 0.86, bassGain: 9, presenceGain: 6, echoMix: 0.15, promptPrefix: 'اقرأ النص التالي باللهجة الخليجية البيضاء الفخمة بصوت ملكي وقور وعميق: ', desc: 'فخامة خليجية رسمية للمناسبات والإعلانات' },
+      { rank: 7, id: 'eg_queen_female', cat: 'female_pro', name: 'ليلى (أنثوي مصري فخم وجذاب)', badge: '🇪🇬 #7 أنثوي مصري', voiceName: 'Aoede', pitch: 1.08, bassGain: 5, presenceGain: 8, echoMix: 0.10, promptPrefix: 'اقرأ النص التالي بصوت أنثوي مصري فخم، ناعم، راقي ومليء بالثقة والجاذبية: ', desc: 'أنوثة راقية وجاذبية عالية للريلز والإعلانات' },
+      { rank: 8, id: 'kh_princess_female', cat: 'female_pro', name: 'الجوهرة (أنثوي خليجي فخم)', badge: '🇦🇪 #8 أنثوي خليجي', voiceName: 'Kore', pitch: 1.06, bassGain: 5, presenceGain: 8, echoMix: 0.12, promptPrefix: 'اقرأ النص التالي بصوت أنثوي خليجي فخم، ناعم، راقي وواثق باللهجة الخليجية العصرية: ', desc: 'نبرة خليجية ناعمة وفخمة للمحتوى الراقي' },
+      { rank: 9, id: 'podcast_pro_studio', cat: 'story_doc', name: 'مايك البودكاست الذهبي (Shure SM7B)', badge: '🎧 #9 بودكاست', voiceName: 'Sadaltager', pitch: 0.92, bassGain: 11, presenceGain: 8, echoMix: 0.05, promptPrefix: 'اقرأ النص التالي بنبرة بودكاست احترافية طبيعية، قريبة، مثقفة وجذابة جداً: ', desc: 'يحول أي صوت عادي إلى جودة بودكاست احترافي' },
+      { rank: 10, id: 'hollywood_trailer', cat: 'cinema_fx', name: 'صوت تريلر هوليوود (Epic Bass)', badge: '🎬 #10 سينما', voiceName: 'Algenib', pitch: 0.78, bassGain: 13, presenceGain: 7, echoMix: 0.25, promptPrefix: 'اقرأ النص التالي بصوت ملاحم وتريلر أفلام هوليوود الضخم العميق والمثير: ', desc: 'عمق سينمائي ضخم للمقدمات الأسطورية' },
+
+      // TIER 11-25: GLOBAL CONTENT CREATORS & DOCUMENTARY
+      { rank: 11, id: 'vox_explainer', cat: 'story_doc', name: 'محلل وثائقيات عالمي (Vox Style)', badge: '🌍 #11 وثائقي', voiceName: 'Rasalgethi', pitch: 0.97, bassGain: 6, presenceGain: 8, echoMix: 0.06, promptPrefix: 'اقرأ النص التالي بأسلوب مقدمي الوثائقيات العلمية والتاريخية المشوق والواضح: ', desc: 'مثالي لمحتوى المعلومات والقصص التاريخية' },
+      { rank: 12, id: 'hormozi_hook', cat: 'reels_trend', name: 'صانع تريند سريع (Viral Hook)', badge: '🔥 #12 تريند', voiceName: 'Puck', pitch: 1.02, bassGain: 6, presenceGain: 10, echoMix: 0.04, promptPrefix: 'اقرأ النص التالي بطاقة عالية وسرعة وحماس يخطف انتباه المشاهد فوراً: ', desc: 'طاقة عالية وحماس لفيديوهات التيك توك والريلز' },
+      { rank: 13, id: 'natgeo_narrator', cat: 'story_doc', name: 'معلق ناشيونال جيوغرافيك', badge: '🦁 #13 برية', voiceName: 'Schedar', pitch: 0.87, bassGain: 9, presenceGain: 7, echoMix: 0.16, promptPrefix: 'اقرأ النص التالي بصوت معلق وثائقيات الطبيعة والحياة البرية الرصين والعميق: ', desc: 'فخامة وثائقية رصينة وهادئة' },
+      { rank: 14, id: 'crime_mystery', cat: 'story_doc', name: 'ملفات الغموض والجريمة', badge: '🕵️ #14 غموض', voiceName: 'Umbriel', pitch: 0.85, bassGain: 8, presenceGain: 6, echoMix: 0.26, promptPrefix: 'اقرأ النص التالي بنبرة غامضة ومثيرة للفضول وكأنك تكشف سراً خطيراً: ', desc: 'إثارة وتشويق لقصص الغموض والماورائيات' },
+      { rank: 15, id: 'motivational_coach', cat: 'reels_trend', name: 'مدرب التحفيز والنجاح', badge: '🏆 #15 تحفيز', voiceName: 'Pulcherrima', pitch: 0.94, bassGain: 8, presenceGain: 9, echoMix: 0.14, promptPrefix: 'اقرأ النص التالي بصوت تحفيزي قوي يبعث الأمل والحماس والقوة في المستمع: ', desc: 'نبرة ملهمة لمقاطع تطوير الذات والرياضة' },
+      { rank: 16, id: 'tech_reviewer', cat: 'reels_trend', name: 'مراجع التقنية الذكي (MKBHD)', badge: '📱 #16 تقنية', voiceName: 'Iapetus', pitch: 0.98, bassGain: 7, presenceGain: 8, echoMix: 0.05, promptPrefix: 'اقرأ النص التالي بأسلوب مراجع تقني عصري، سلس، ذكي ومقنع: ', desc: 'وضوح ونقاء مثالي لمراجعات الهواتف والذكاء الاصطناعي' },
+      { rank: 17, id: 'news_anchor_live', cat: 'vip_arabic', name: 'مذيع نشرة الأخبار الرئيسية', badge: '📺 #17 إخباري', voiceName: 'Orus', pitch: 0.93, bassGain: 8, presenceGain: 9, echoMix: 0.08, promptPrefix: 'اقرأ النص التالي بأسلوب مذيع أخبار محترف، رصين، دقيق وموثوق: ', desc: 'جدية ومصداقية عالية للأخبار والتحليلات' },
+      { rank: 18, id: 'romantic_poet', cat: 'story_doc', name: 'شاعر الليل والخواطر', badge: '🌙 #18 شعر', voiceName: 'Sulafat', pitch: 0.91, bassGain: 8, presenceGain: 5, echoMix: 0.28, promptPrefix: 'اقرأ النص التالي بإحساس شعري عميق، هادئ، رومانسي ومؤثر: ', desc: 'إحساس دافئ مع صدى ناعم للخواطر والأشعار' },
+      { rank: 19, id: 'luxury_car_ad', cat: 'vip_arabic', name: 'إعلان سيارات فارهة', badge: '🏎️ #19 فخامة', voiceName: 'Charon', pitch: 0.83, bassGain: 11, presenceGain: 8, echoMix: 0.18, promptPrefix: 'اقرأ النص التالي بصوت فخم جداً وقوي يليق بإعلان سيارة فارهة أو ساعة عالمية: ', desc: 'هيبة وفخامة تجارية من الطراز الأول' },
+      { rank: 20, id: 'crystal_female_pro', cat: 'female_pro', name: 'نور (صوت أنثوي كريستالي نقي)', badge: '💎 #20 كريستال', voiceName: 'Zephyr', pitch: 1.12, bassGain: 4, presenceGain: 9, echoMix: 0.08, promptPrefix: 'اقرأ النص التالي بصوت أنثوي مشرق، نقي، واضح ومبهج: ', desc: 'نقاء وحيوية للإعلانات العصرية والمحتوى التعليمي' },
+
+      // TIER 21-35: SOCIAL MEDIA, GAMING & LIFESTYLE
+      { rank: 21, id: 'gaming_streamer', cat: 'reels_trend', name: 'ستريمر جيمينج حماسي', badge: '🎮 #21 جيمينج', voiceName: 'Fenrir', pitch: 1.04, bassGain: 7, presenceGain: 9, echoMix: 0.06, promptPrefix: 'اقرأ النص التالي بحماس لاعب محترف وستريمر مليء بالطاقة والتفاعل: ', desc: 'مناسب لمقاطع الألعاب واللقطات الحماسية' },
+      { rank: 22, id: 'asmr_whisper', cat: 'female_pro', name: 'همس ASMR فائق النعومة', badge: '🎧 #22 ASMR', voiceName: 'Vindemiatrix', pitch: 1.05, bassGain: 6, presenceGain: 7, echoMix: 0.15, promptPrefix: 'اقرأ النص التالي بهمس ناعم جداً ومريح للأعصاب بأسلوب ASMR: ', desc: 'نعومة فائقة وتفاصيل صوتية دقيقة' },
+      { rank: 23, id: 'sports_commentator', cat: 'reels_trend', name: 'معلق رياضي ناري', badge: '⚽ #23 رياضة', voiceName: 'Sadachbia', pitch: 1.01, bassGain: 7, presenceGain: 10, echoMix: 0.18, promptPrefix: 'اقرأ النص التالي بحماس معلق رياضي في لحظة تسجيل هدف حاسم: ', desc: 'انفعال وحماس رياضي مشتعل' },
+      { rank: 24, id: 'business_mentor', cat: 'vip_arabic', name: 'مستشار المال والأعمال', badge: '💼 #24 أعمال', voiceName: 'Algieba', pitch: 0.93, bassGain: 8, presenceGain: 8, echoMix: 0.06, promptPrefix: 'اقرأ النص التالي بثقة رجل أعمال وخبير استثماري محنك: ', desc: 'ثقة ومصداقية لمحتوى التجارة وريادة الأعمال' },
+      { rank: 25, id: 'travel_vlogger', cat: 'reels_trend', name: 'رحالة ومغامر حول العالم', badge: '✈️ #25 سفر', voiceName: 'Laomedeia', pitch: 1.03, bassGain: 6, presenceGain: 8, echoMix: 0.10, promptPrefix: 'اقرأ النص التالي بروح المغامرة والاكتشاف والسفر الممتع: ', desc: 'نبرة حيوية مبهجة لفلوقات السفر والسياحة' },
+      { rank: 26, id: 'warm_storyteller_f', cat: 'female_pro', name: 'سلمى (حكواتية دافئة)', badge: '📖 #26 قصص', voiceName: 'Despina', pitch: 1.07, bassGain: 5, presenceGain: 7, echoMix: 0.14, promptPrefix: 'اقرأ النص التالي بصوت أنثوي دافئ وسلس يروي قصة ممتعة: ', desc: 'سرد أنثوي سلس ومريح للأذن' },
+      { rank: 27, id: 'tiktok_top10', cat: 'reels_trend', name: 'مقدم قوائم Top 10', badge: '🔟 #27 قوائم', voiceName: 'Puck', pitch: 1.05, bassGain: 6, presenceGain: 9, echoMix: 0.05, promptPrefix: 'اقرأ النص التالي بإيقاع سريع ومشوق كأنه عد تنازلي لأهم 10 حقائق: ', desc: 'إيقاع سريع يمنع الملل ويزيد المشاهدات' },
+      { rank: 28, id: 'calm_meditation', cat: 'story_doc', name: 'مرشد التأمل والهدوء', badge: '🧘 #28 استرخاء', voiceName: 'Achird', pitch: 0.90, bassGain: 7, presenceGain: 4, echoMix: 0.25, promptPrefix: 'اقرأ النص التالي ببطء شديد وهدوء تام يبعث على السكينة والاسترخاء: ', desc: 'هدوء عميق لتصفية الذهن والنوم' },
+      { rank: 29, id: 'fashion_luxury_f', cat: 'female_pro', name: 'ياسمين (عالم الموضة والجمال)', badge: '💄 #29 موضة', voiceName: 'Leda', pitch: 1.11, bassGain: 4, presenceGain: 8, echoMix: 0.11, promptPrefix: 'اقرأ النص التالي بأسلوب أنثوي عصري وأنيق يناسب إعلانات العطور والأزياء: ', desc: 'أناقة وعصرية لإعلانات العطور والموضة' },
+      { rank: 30, id: 'friendly_neighbor', cat: 'reels_trend', name: 'صديقك العفوي القريب', badge: '🤝 #30 عفوي', voiceName: 'Zubenelgenubi', pitch: 1.0, bassGain: 6, presenceGain: 7, echoMix: 0.04, promptPrefix: 'اقرأ النص التالي بعفوية تامة وبساطة وكأنك تتحدث مع صديقك المقرب: ', desc: 'بساطة وطبيعية بعيدة عن التكلف' },
+
+      // TIER 31-50: CINEMA CHARACTERS, RADIO & VOICE TRANSFORMATION PRESETS
+      { rank: 31, id: 'radio_fm_classic', cat: 'vip_arabic', name: 'مذيع راديو FM الذهبي', badge: '📻 #31 راديو', voiceName: 'Enceladus', pitch: 0.91, bassGain: 10, presenceGain: 9, echoMix: 0.08, promptPrefix: 'اقرأ النص التالي بصوت مذيع راديو محترف دافئ وجذاب: ', desc: 'دفء إذاعي كلاسيكي يحسن أي تسجيل' },
+      { rank: 32, id: 'wise_elder', cat: 'cinema_fx', name: 'الحكيم صاحب الخبرة', badge: '🧙 #32 حكيم', voiceName: 'Gacrux', pitch: 0.81, bassGain: 10, presenceGain: 6, echoMix: 0.18, promptPrefix: 'اقرأ النص التالي بصوت رجل حكيم وقور ينقل خلاصة تجارب الحياة: ', desc: 'وقار وحكمة للأقوال المأثورة والعبر' },
+      { rank: 33, id: 'energetic_youth_f', cat: 'female_pro', name: 'ريم (شبابي حيوي ومشرق)', badge: '🌟 #33 شبابي', voiceName: 'Autonoe', pitch: 1.14, bassGain: 4, presenceGain: 8, echoMix: 0.07, promptPrefix: 'اقرأ النص التالي بصوت فتاة شابة مفعمة بالحيوية والنشاط والتفاؤل: ', desc: 'طاقة شبابية مشرقة للمحتوى الترفيهي' },
+      { rank: 34, id: 'dark_villain', cat: 'cinema_fx', name: 'الزعيم الغامض (Dark Boss)', badge: '🖤 #34 هيبة', voiceName: 'Algenib', pitch: 0.76, bassGain: 12, presenceGain: 7, echoMix: 0.24, promptPrefix: 'اقرأ النص التالي بصوت عميق جداً، هادئ ومهيب يفرض سيطرته: ', desc: 'قوة وهيبة درامية للمشاهد السينمائية' },
+      { rank: 35, id: 'edu_teacher', cat: 'story_doc', name: 'المعلم المبسط للمعلومات', badge: '🎓 #35 تعليمي', voiceName: 'Erinome', pitch: 0.99, bassGain: 5, presenceGain: 8, echoMix: 0.05, promptPrefix: 'اقرأ النص التالي بوضوح تام وأسلوب شرح مبسط وسهل الفهم: ', desc: 'وضوح مخارج الحروف للدروس والشروحات' },
+      { rank: 36, id: 'breezy_lifestyle_f', cat: 'female_pro', name: 'مايا (لايف ستايل وفلوقات)', badge: '☕ #36 فلوق', voiceName: 'Callirrhoe', pitch: 1.09, bassGain: 5, presenceGain: 7, echoMix: 0.08, promptPrefix: 'اقرأ النص التالي بأسلوب سلس ومريح يناسب فيديوهات الروتين اليومي والقهوة: ', desc: 'نعومة وعفوية لفلوقات الحياة اليومية' },
+      { rank: 37, id: 'stadium_announcer', cat: 'cinema_fx', name: 'مذيع الحفلات والملاعب الضخمة', badge: '🏟️ #37 استعراض', voiceName: 'Fenrir', pitch: 0.88, bassGain: 10, presenceGain: 9, echoMix: 0.32, promptPrefix: 'اقرأ النص التالي بصوت جهوري ضخم يقدم نجماً على مسرح كبير: ', desc: 'صدى مسرحي فخم لتقديم الضيوف والأبطال' },
+      { rank: 38, id: 'sci_fi_ai', cat: 'cinema_fx', name: 'الذكاء الاصطناعي المستقبلي (JARVIS)', badge: '🤖 #38 مستقبلي', voiceName: 'Iapetus', pitch: 0.95, bassGain: 6, presenceGain: 10, echoMix: 0.16, promptPrefix: 'اقرأ النص التالي بدقة متناهية ونبرة ذكاء اصطناعي متطور وأنيق: ', desc: 'نبرة تقنية مستقبلية لمحتوى الخيال العلمي' },
+      { rank: 39, id: 'warm_baritone', cat: 'vip_arabic', name: 'باريتون دافئ للإعلانات', badge: '🎼 #39 باريتون', voiceName: 'Sulafat', pitch: 0.87, bassGain: 9, presenceGain: 7, echoMix: 0.11, promptPrefix: 'اقرأ النص التالي بصوت باريتون رخيم ومريح يبعث على الثقة: ', desc: 'توازن مثالي بين العمق والدفء' },
+      { rank: 40, id: 'urgent_breaking', cat: 'reels_trend', name: 'خبر عاجل وحصري', badge: '🚨 #40 عاجل', voiceName: 'Alnilam', pitch: 1.01, bassGain: 7, presenceGain: 10, echoMix: 0.07, promptPrefix: 'اقرأ النص التالي بنبرة عاجلة ومهمة تلفت الانتباه فوراً: ', desc: 'مثالي للأخبار العاجلة والتنبيهات المهمة' },
+      { rank: 41, id: 'kids_story_f', cat: 'female_pro', name: 'حكايات الأطفال والخيال', badge: '🧸 #41 حكايات', voiceName: 'Leda', pitch: 1.16, bassGain: 4, presenceGain: 8, echoMix: 0.12, promptPrefix: 'اقرأ النص التالي بصوت لطيف ومعبر يروي قصة خيالية ممتعة: ', desc: 'تعبير حيوي للقصص والرسوم المتحركة' },
+      { rank: 42, id: 'noir_detective', cat: 'cinema_fx', name: 'محقق السينما الكلاسيكية', badge: '🕵️‍♂️ #42 نوار', voiceName: 'Umbriel', pitch: 0.83, bassGain: 9, presenceGain: 6, echoMix: 0.22, promptPrefix: 'اقرأ النص التالي بصوت محقق في فيلم كلاسيكي يروي مذكراته تحت المطر: ', desc: 'طابع سينمائي كلاسيكي غامض' },
+      { rank: 43, id: 'luxury_real_estate', cat: 'vip_arabic', name: 'تسويق العقارات الفاخرة', badge: '🏰 #43 عقارات', voiceName: 'Charon', pitch: 0.89, bassGain: 9, presenceGain: 8, echoMix: 0.13, promptPrefix: 'اقرأ النص التالي بأسلوب راقي وفخم يستعرض قصراً أو مشروعاً عقارياً فاخراً: ', desc: 'فخامة وإقناع لجولات الفلل والمشاريع' },
+      { rank: 44, id: 'upbeat_promo', cat: 'reels_trend', name: 'عروض وتخفيضات حماسية', badge: '🛍️ #44 عروض', voiceName: 'Sadachbia', pitch: 1.06, bassGain: 6, presenceGain: 9, echoMix: 0.08, promptPrefix: 'اقرأ النص التالي بحماس وتشويق للإعلان عن عرض حصري لفترة محدودة: ', desc: 'طاقة بيعية عالية للإعلانات الترويجية' },
+      { rank: 45, id: 'gentle_counselor_f', cat: 'female_pro', name: 'د. هدى (تطوير الذات والهدوء)', badge: '🌿 #45 نفسي', voiceName: 'Vindemiatrix', pitch: 1.02, bassGain: 6, presenceGain: 6, echoMix: 0.10, promptPrefix: 'اقرأ النص التالي بصوت هادئ ومتزن يقدم نصيحة نفسية أو حياتية قيمة: ', desc: 'اتزان وهدوء لمحتوى الصحة النفسية' },
+      { rank: 46, id: 'cyber_glitch_voice', cat: 'cinema_fx', name: 'صوت السايبربانك الرقمي', badge: '👾 #46 سايبر', voiceName: 'Fenrir', pitch: 0.82, bassGain: 10, presenceGain: 10, echoMix: 0.25, promptPrefix: 'اقرأ النص التالي بنبرة قوية حادة تناسب عالم السايبربانك والمستقبل: ', desc: 'تأثير رقمي قوي للمونتاج العصري' },
+      { rank: 47, id: 'smooth_jazz_host', cat: 'story_doc', name: 'مذيع سهرة منتصف الليل', badge: '🎷 #47 سهرة', voiceName: 'Algieba', pitch: 0.86, bassGain: 10, presenceGain: 6, echoMix: 0.20, promptPrefix: 'اقرأ النص التالي بصوت هادئ رخيم يناسب برامج السهرة والموسيقى الهادئة: ', desc: 'استرخاء وفخامة ليلية' },
+      { rank: 48, id: 'sharp_critic', cat: 'reels_trend', name: 'الناقد الجريء', badge: '🎯 #48 نقد', voiceName: 'Rasalgethi', pitch: 0.98, bassGain: 7, presenceGain: 9, echoMix: 0.05, promptPrefix: 'اقرأ النص التالي بنبرة ذكية، جريئة ومباشرة بدون مجاملات: ', desc: 'وضوح وحسم لمقاطع الرأي والنقد' },
+      { rank: 49, id: 'grand_ceremony', cat: 'vip_arabic', name: 'عريف الحفلات الرسمية', badge: '🎖️ #49 تشريفات', voiceName: 'Orus', pitch: 0.88, bassGain: 9, presenceGain: 8, echoMix: 0.20, promptPrefix: 'اقرأ النص التالي بأسلوب رسمي فخم يليق بافتتاح مؤتمر أو حفل تكريم: ', desc: 'أداء خطابي رسمي متقن' },
+      { rank: 50, id: 'natural_clean_enhancer', cat: 'reels_trend', name: 'المُحسِّن الطبيعي الذكي (Clean Studio)', badge: '✨ #50 نقي', voiceName: 'Schedar', pitch: 1.0, bassGain: 6, presenceGain: 7, echoMix: 0.04, promptPrefix: 'اقرأ النص التالي بصوت طبيعي نقي وواضح جداً كأنه مسجل في استوديو احترافي: ', desc: 'ينقي الصوت ويجعله جذاباً بدون تغيير الطبقة' }
+    ];
+
+    const CAPCUT_EFFECTS = [
+      // 1. Trending & Viral
+      { id: 'chromatic_split', cat: 'trending', name: 'فصل ألوان RGB برو', icon: 'fa-eye', color: 'from-cyan-400 via-fuchsia-500 to-rose-500', desc: 'انحراف لوني سينمائي متموج' },
+      { id: 'velocity_pump', cat: 'trending', name: 'نبض السرعة والإيقاع', icon: 'fa-heart-pulse', color: 'from-amber-400 to-rose-600', desc: 'زوم خاطف مع وميض الإيقاع' },
+      { id: 'shake_pro', cat: 'trending', name: 'اهتزاز الكاميرا (زلزال)', icon: 'fa-house-crack', color: 'from-cyan-500 to-blue-600', desc: 'اهتزاز يدوي ديناميكي قوي' },
+      { id: 'hologram_3d', cat: 'trending', name: 'هولوجرام ثلاثي الأبعاد', icon: 'fa-cube', color: 'from-sky-400 to-cyan-300', desc: 'خطوط مسح ليزر زرقاء' },
+      { id: 'thermal_vision', cat: 'trending', name: 'رؤية حرارية (Predator)', icon: 'fa-fire-flame-curved', color: 'from-red-600 via-yellow-400 to-blue-600', desc: 'تصوير بالأشعة تحت الحمراء' },
+      { id: 'night_vision', cat: 'trending', name: 'رؤية ليلية عسكرية', icon: 'fa-binoculars', color: 'from-emerald-500 to-green-900', desc: 'عدسة ليلية خضراء مع تشويش' },
+      { id: 'liquid_wave', cat: 'trending', name: 'تموج مائي سائل', icon: 'fa-water', color: 'from-blue-400 to-indigo-600', desc: 'انسياب وتموج الصورة حياً' },
+
+      // 2. Cinema & Hollywood
+      { id: 'anamorphic_flare', cat: 'cinema', name: 'توهج عدسة أنافورميك', icon: 'fa-star-of-life', color: 'from-sky-300 via-blue-500 to-indigo-700', desc: 'شعاع سينمائي أفقي هوليوودي' },
+      { id: 'film_grain_35mm', cat: 'cinema', name: 'فيلم 35mm وخدوش', icon: 'fa-film', color: 'from-amber-700 to-stone-900', desc: 'تحبيب وخدوش شريط السينما' },
+      { id: 'cinema_bars', cat: 'cinema', name: 'أشرطة سينما 2.39:1', icon: 'fa-clapperboard', color: 'from-zinc-700 to-black', desc: 'إطار أفلام عريض احترافي' },
+      { id: 'halation_glow', cat: 'cinema', name: 'هالة إضاءة سينمائية', icon: 'fa-sun', color: 'from-orange-500 to-red-700', desc: 'توهج دافئ حول الإضاءات' },
+      { id: 'vignette_pro', cat: 'cinema', name: 'تظليل حواف سينمائي', icon: 'fa-circle-dot', color: 'from-slate-600 to-slate-950', desc: 'تركيز بصري في منتصف الكادر' },
+      { id: 'dreamy_bloom', cat: 'cinema', name: 'حلم ناعم (Soft Bloom)', icon: 'fa-cloud-sun', color: 'from-pink-300 to-purple-500', desc: 'نعومة وتوهج حالم للوجه' },
+
+      // 3. Retro & Glitch
+      { id: 'glitch_blocks', cat: 'retro', name: 'جليتش سايبربانك', icon: 'fa-bolt', color: 'from-pink-500 to-purple-600', desc: 'تقطيع رقمي ومربعات مشوشة' },
+      { id: 'vhs_tracking', cat: 'retro', name: 'شريط VHS التسعينات', icon: 'fa-tv', color: 'from-indigo-500 to-purple-800', desc: 'خطوط تتبع وتشويش كاسيت' },
+      { id: 'crt_monitor', cat: 'retro', name: 'شاشة CRT قديمة', icon: 'fa-desktop', color: 'from-teal-500 to-slate-800', desc: 'شبكة بيكسلات وانحناء شاشة' },
+      { id: 'pixelate_8bit', cat: 'retro', name: 'موزاييك 8-Bit بيكسل', icon: 'fa-border-all', color: 'from-lime-400 to-emerald-600', desc: 'تحويل المشهد لألعاب ريترو' },
+      { id: 'mirror_split', cat: 'retro', name: 'انعكاس مرآة مزدوج', icon: 'fa-clone', color: 'from-teal-400 to-cyan-600', desc: 'تطابق بصري متناظر' },
+
+      // 4. Particles & Overlays
+      { id: 'golden_bokeh', cat: 'particles', name: 'بوكيه وشرار ذهبي', icon: 'fa-sparkles', color: 'from-yellow-300 to-amber-600', desc: 'جزيئات ذهبية متطايرة ساحرة' },
+      { id: 'snowfall', cat: 'particles', name: 'تساقط ثلوج شتوي', icon: 'fa-snowflake', color: 'from-sky-100 to-blue-400', desc: 'ندفات ثلج واقعية متحركة' },
+      { id: 'raindrops', cat: 'particles', name: 'أمطار سينمائية', icon: 'fa-cloud-rain', color: 'from-slate-400 to-blue-700', desc: 'قطرات مطر سريعة مائلة' },
+      { id: 'fire_embers', cat: 'particles', name: 'شرر نار متصاعد', icon: 'fa-fire', color: 'from-orange-500 to-red-700', desc: 'جمر وشرار ناري متوهج' },
+      { id: 'confetti_party', cat: 'particles', name: 'قصاصات احتفال ملونة', icon: 'fa-wand-magic-sparkles', color: 'from-pink-500 via-yellow-400 to-cyan-400', desc: 'أجواء احتفالية مبهجة' },
+      { id: 'light_leaks', cat: 'particles', name: 'تسرب ضوئي دافئ', icon: 'fa-sun-plant-wilt', color: 'from-amber-400 via-orange-500 to-rose-500', desc: 'إضاءة شمس سينمائية جانبية' }
+    ];
+
+    // --- WORLD-CLASS PRO TEXT TEMPLATES LIBRARY ---
+    const PRO_TEXT_TEMPLATES = [
+      {
+        id: 'hormozi',
+        name: 'كابشن تريند (Hormozi)',
+        previewText: 'أسرار النجاح 🔥',
+        badge: 'الأكثر طلباً',
+        badgeColor: 'bg-amber-500 text-black',
+        style: {
+          fontFamily: 'Cairo',
+          fontSize: 72,
+          color: '#ffe600',
+          gradientTo: '#ff9900',
+          strokeColor: '#000000',
+          strokeWidth: 8,
+          bgColor: 'rgba(0,0,0,0)',
+          shadowColor: 'rgba(0,0,0,0.9)',
+          animation: 'bounce',
+          templateStyle: 'hormozi'
+        }
+      },
+      {
+        id: 'karaoke_neon',
+        name: 'نيون كاريوكي متوهج',
+        previewText: 'إبداع بلا حدود ⚡',
+        badge: 'نيون',
+        badgeColor: 'bg-cyan-400 text-black',
+        style: {
+          fontFamily: 'Changa',
+          fontSize: 68,
+          color: '#ffffff',
+          gradientTo: '#00e5ff',
+          strokeColor: '#00e5ff',
+          strokeWidth: 3,
+          bgColor: 'rgba(0, 229, 255, 0.16)',
+          shadowColor: '#00e5ff',
+          animation: 'pulse',
+          templateStyle: 'neon_box'
+        }
+      },
+      {
+        id: 'breaking_news',
+        name: 'شريط أخبار عاجلة',
+        previewText: 'عاجل: تحديث جديد حصرياً',
+        badge: 'إخباري',
+        badgeColor: 'bg-red-600 text-white',
+        style: {
+          fontFamily: 'Tajawal',
+          fontSize: 54,
+          color: '#ffffff',
+          gradientTo: '',
+          strokeColor: '#990000',
+          strokeWidth: 0,
+          bgColor: '#dc2626',
+          shadowColor: 'rgba(0,0,0,0.6)',
+          animation: 'slide',
+          templateStyle: 'news_bar'
+        }
+      },
+      {
+        id: 'cinema_trailer',
+        name: 'عنوان فيلم هوليوودي',
+        previewText: 'الأسطورة تعود',
+        badge: 'سينما',
+        badgeColor: 'bg-purple-600 text-white',
+        style: {
+          fontFamily: 'Amiri',
+          fontSize: 80,
+          color: '#f8fafc',
+          gradientTo: '#cbd5e1',
+          strokeColor: '#000000',
+          strokeWidth: 2,
+          bgColor: 'rgba(0,0,0,0)',
+          shadowColor: 'rgba(255,255,255,0.45)',
+          animation: 'zoom_slam',
+          templateStyle: 'cinema'
+        }
+      },
+      {
+        id: 'esports_gaming',
+        name: 'جيمينج ورياضات إلكترونية',
+        previewText: 'نصر ساحق GG',
+        badge: 'Gaming',
+        badgeColor: 'bg-fuchsia-600 text-white',
+        style: {
+          fontFamily: 'Changa',
+          fontSize: 72,
+          color: '#ff2a85',
+          gradientTo: '#9d4edd',
+          strokeColor: '#ffffff',
+          strokeWidth: 6,
+          bgColor: 'rgba(15, 17, 21, 0.85)',
+          shadowColor: '#ff2a85',
+          animation: 'glitch_text',
+          templateStyle: 'gaming'
+        }
+      },
+      {
+        id: 'luxury_gold',
+        name: 'ذهبي ملكي فاخر',
+        previewText: 'فخامة التصميم',
+        badge: 'VIP',
+        badgeColor: 'bg-yellow-500 text-black',
+        style: {
+          fontFamily: 'Amiri',
+          fontSize: 74,
+          color: '#fde047',
+          gradientTo: '#ca8a04',
+          strokeColor: '#422006',
+          strokeWidth: 4,
+          bgColor: 'rgba(20, 15, 5, 0.65)',
+          shadowColor: '#eab308',
+          animation: 'fade',
+          templateStyle: 'luxury'
+        }
+      },
+      {
+        id: 'tiktok_pill',
+        name: 'كبسولة تيك توك عصرية',
+        previewText: 'شاهد للنهاية 👀',
+        badge: 'TikTok',
+        badgeColor: 'bg-white text-black',
+        style: {
+          fontFamily: 'Readex Pro',
+          fontSize: 58,
+          color: '#0f1115',
+          gradientTo: '',
+          strokeColor: '#ffffff',
+          strokeWidth: 0,
+          bgColor: '#ffffff',
+          shadowColor: 'rgba(0,0,0,0.4)',
+          animation: 'bounce',
+          templateStyle: 'pill'
+        }
+      },
+      {
+        id: 'typewriter_cyber',
+        name: 'آلة كاتبة برمجية',
+        previewText: 'جاري تحميل المستقبل...',
+        badge: 'تقني',
+        badgeColor: 'bg-emerald-500 text-black',
+        style: {
+          fontFamily: 'Cairo',
+          fontSize: 56,
+          color: '#34d399',
+          gradientTo: '',
+          strokeColor: '#064e3b',
+          strokeWidth: 3,
+          bgColor: 'rgba(6, 78, 59, 0.55)',
+          shadowColor: '#10b981',
+          animation: 'typewriter',
+          templateStyle: 'cyber'
+        }
+      }
+    ];
+
+    const COLOR_FILTERS = [
+      { id: 'none', name: 'طبيعي', css: 'none', badge: 'bg-gray-600' },
+      { id: 'teal_orange', name: 'Teal & Orange هوليوود', css: 'contrast(118%) saturate(135%) hue-rotate(-8deg)', badge: 'bg-teal-500' },
+      { id: 'warm', name: 'سينمائي دافئ', css: 'sepia(25%) saturate(135%) contrast(110%)', badge: 'bg-amber-500' },
+      { id: 'cyber', name: 'سايبربانك ليلي', css: 'hue-rotate(190deg) saturate(165%) contrast(120%)', badge: 'bg-cyan-500' },
+      { id: 'noir', name: 'أبيض وأسود درامي', css: 'grayscale(100%) contrast(135%)', badge: 'bg-zinc-400' },
+      { id: 'vivid', name: 'تباين HDR فائق', css: 'saturate(170%) contrast(128%) brightness(105%)', badge: 'bg-pink-500' },
+      { id: 'vintage', name: 'كوداك كلاسيك 1980', css: 'sepia(55%) contrast(95%) brightness(96%)', badge: 'bg-orange-700' },
+      { id: 'golden', name: 'الساعة الذهبية', css: 'sepia(35%) saturate(160%) brightness(108%)', badge: 'bg-yellow-500' }
+    ];
+
+    const STICKERS_LIST = ['🔥', '⚡', '🎬', '✨', '🚀', '💎', '❤️', '👑', '🎵', '💥', '🌟', '😎', '💯', '🎯', '🦋', '🌈'];
+
+    // --- BUILT-IN STOCK VIDEOS & PHOTOS LIBRARY ---
+    const STOCK_VIDEOS_LIBRARY = [
+      { id: 'stock_vid_cyber', name: 'مدينة سايبربانك نيون', badge: '4K Loop', duration: 8, gradient: 'from-cyan-500 via-blue-700 to-purple-900', icon: 'fa-city' },
+      { id: 'stock_vid_sunset', name: 'غروب شمس سينمائي', badge: 'طبيعة', duration: 8, gradient: 'from-amber-400 via-orange-600 to-rose-900', icon: 'fa-sun' },
+      { id: 'stock_vid_matrix', name: 'مصفوفة بيانات رقمية', badge: 'تقني', duration: 8, gradient: 'from-emerald-400 via-green-700 to-black', icon: 'fa-code' },
+      { id: 'stock_vid_galaxy', name: 'مجرة ونجوم متحركة', badge: 'فضاء', duration: 8, gradient: 'from-indigo-500 via-purple-800 to-slate-950', icon: 'fa-meteor' },
+      { id: 'stock_vid_waves', name: 'أمواج طاقة صوتية', badge: 'موسيقى', duration: 8, gradient: 'from-pink-500 via-rose-600 to-indigo-900', icon: 'fa-wave-square' },
+      { id: 'stock_vid_luxury', name: 'جزيئات ذهبية فاخرة', badge: 'VIP', duration: 8, gradient: 'from-yellow-300 via-amber-600 to-stone-950', icon: 'fa-crown' }
+    ];
+
+    const STOCK_PHOTOS_LIBRARY = [
+      { id: 'stock_img_studio', name: 'خلفية استوديو داكنة', badge: 'خلفية', gradient: 'from-slate-800 via-zinc-900 to-black', c1: '#1e293b', c2: '#090d16', accent: '#00e5ff' },
+      { id: 'stock_img_royal', name: 'تدرج ملكي ذهبي', badge: 'فخم', gradient: 'from-amber-600 via-yellow-800 to-stone-950', c1: '#b45309', c2: '#1c1917', accent: '#fde047' },
+      { id: 'stock_img_neon', name: 'إضاءة نيون وردي وأزرق', badge: 'تريند', gradient: 'from-fuchsia-600 via-purple-800 to-cyan-900', c1: '#c026d3', c2: '#164e63', accent: '#38bdf8' },
+      { id: 'stock_img_nature', name: 'أفق الجبال والضباب', badge: 'طبيعة', gradient: 'from-emerald-600 via-teal-800 to-slate-900', c1: '#059669', c2: '#0f172a', accent: '#6ee7b7' },
+      { id: 'stock_img_fire', name: 'خلفية حماسية نارية', badge: 'أكشن', gradient: 'from-red-600 via-orange-700 to-neutral-950', c1: '#dc2626', c2: '#0a0a0a', accent: '#fb923c' },
+      { id: 'stock_img_minimal', name: 'بطاقة بيضاء عصرية', badge: 'ناعم', gradient: 'from-gray-100 via-slate-200 to-zinc-300', c1: '#f8fafc', c2: '#cbd5e1', accent: '#0284c7' }
+    ];
+
+    // --- TREND SOUND EFFECTS LIBRARY (SYNTHESIZED HIGH-IMPACT SFX) ---
+    const TREND_SFX_LIST = [
+      { id: 'cinema_boom', name: 'ضربة سينمائية عميقة (Boom)', icon: 'fa-explosion', color: 'text-rose-400', dur: 2.2 },
+      { id: 'whoosh_swipe', name: 'انتقال سريع (Whoosh)', icon: 'fa-wind', color: 'text-cyan-400', dur: 1.1 },
+      { id: 'trend_pop', name: 'فرقعة تريند (TikTok Pop)', icon: 'fa-bubble', color: 'text-amber-400', dur: 0.6 },
+      { id: 'riser_tension', name: 'تصاعد تشويق درامي (Riser)', icon: 'fa-arrow-trend-up', color: 'text-purple-400', dur: 3.0 },
+      { id: 'cyber_laser', name: 'ليزر سايبربانك (Laser)', icon: 'fa-bolt', color: 'text-emerald-400', dur: 1.0 },
+      { id: 'cash_ding', name: 'رنين نجاح / كاش (Ding)', icon: 'fa-coins', color: 'text-yellow-400', dur: 1.4 }
+    ];
+
+    // --- ARABIC DIALECT & VOICE PERSONAS FOR AI DUBBING / TTS ---
+    const VOICE_PERSONAS = [
+      {
+        id: 'eg_male_luxury',
+        name: 'فخم مصري (رجالي إذاعي)',
+        desc: 'صوت مصري رخيم وفخم للإعلانات والريلز',
+        voiceName: 'Charon',
+        badge: 'مصري فخم 🇪🇬',
+        promptPrefix: 'اقرأ النص التالي بصوت رجالي مصري فخم جداً، رخيم، واثق، وبأسلوب مذيع إعلانات محترف باللهجة المصرية الراقية: '
+      },
+      {
+        id: 'eg_female_luxury',
+        name: 'أنثوي مصري فخم (ناعم وجذاب)',
+        desc: 'صوت أنثوي مصري راقي وجذاب للبراندات',
+        voiceName: 'Aoede',
+        badge: 'أنثوي مصري 🇪🇬',
+        promptPrefix: 'اقرأ النص التالي بصوت أنثوي مصري فخم، ناعم، راقي وجذاب باللهجة المصرية العصرية الأنيقة: '
+      },
+      {
+        id: 'kh_male_luxury',
+        name: 'خليجي فخم (ملكي وقوي)',
+        desc: 'نبرة خليجية فخمة ووقورة للمحتوى الفاخر',
+        voiceName: 'Orus',
+        badge: 'خليجي فخم 🇸🇦',
+        promptPrefix: 'اقرأ النص التالي بصوت رجالي خليجي فخم جداً، ملكي، وقور وعميق باللهجة الخليجية البيضاء الفخمة: '
+      },
+      {
+        id: 'kh_female_luxury',
+        name: 'أنثوي خليجي فخم (راقي ومميز)',
+        desc: 'صوت أنثوي خليجي ناعم وفخم للإعلانات',
+        voiceName: 'Kore',
+        badge: 'أنثوي خليجي 🇦🇪',
+        promptPrefix: 'اقرأ النص التالي بصوت أنثوي خليجي فخم، ناعم، واثق وراقي باللهجة الخليجية العصرية الفخمة: '
+      }
+    ];
+
+    // --- INITIALIZATION ---
+    window.onload = function () {
+      updateCanvasDimensions();
+      switchTab('effects');
+      renderTimeline();
+      requestAnimationFrame(mainLoop);
+      setupCanvasInteractions();
+      window.addEventListener('resize', fitCanvasToWrapper);
+    };
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      document.getElementById('toastMessage').textContent = msg;
+      box.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        box.classList.add('translate-y-20', 'opacity-0');
+      }, 2800);
+    }
+
+    function saveHistory() {
+      const snapshot = JSON.stringify({
+        clips: state.clips.map(c => ({ ...c, mediaElement: undefined })),
+        adjustments: { ...state.adjustments },
+        duration: state.duration
+      });
+      state.history.push(snapshot);
+      if (state.history.length > 25) state.history.shift();
+      state.future = [];
+    }
+
+    function undo() {
+      if (state.history.length === 0) return showToast('لا يوجد إجراءات للتراجع عنها');
+      const current = JSON.stringify({
+        clips: state.clips.map(c => ({ ...c, mediaElement: undefined })),
+        adjustments: { ...state.adjustments },
+        duration: state.duration
+      });
+      state.future.push(current);
+      const prev = JSON.parse(state.history.pop());
+      restoreSnapshot(prev);
+      showToast('تم التراجع');
+    }
+
+    function redo() {
+      if (state.future.length === 0) return showToast('لا يوجد إجراءات للإعادة');
+      const current = JSON.stringify({
+        clips: state.clips.map(c => ({ ...c, mediaElement: undefined })),
+        adjustments: { ...state.adjustments },
+        duration: state.duration
+      });
+      state.history.push(current);
+      const next = JSON.parse(state.future.pop());
+      restoreSnapshot(next);
+      showToast('تمت الإعادة');
+    }
+
+    function restoreSnapshot(snap) {
+      state.adjustments = snap.adjustments;
+      state.duration = snap.duration;
+      state.clips = snap.clips.map(c => {
+        const poolItem = state.mediaPool.find(m => m.id === c.mediaId);
+        return { ...c, mediaElement: poolItem ? poolItem.element : null };
+      });
+      renderTimeline();
+      renderInspector();
+    }
+
+    // --- ASPECT RATIO & CANVAS SIZING ---
+    function changeAspectRatio(ratio) {
+      state.aspectRatio = ratio;
+      document.getElementById('activeRatioBadge').textContent = ratio;
+      updateCanvasDimensions();
+      showToast(`تم تغيير الأبعاد إلى ${ratio}`);
+    }
+
+    function changeResolution(res) {
+      state.resolutionHeight = parseInt(res, 10);
+      updateCanvasDimensions();
+      showToast(`تم ضبط الدقة على ${res}p`);
+    }
+
+    function updateCanvasDimensions() {
+      const h = state.resolutionHeight;
+      let w = Math.round(h * (16 / 9));
+      if (state.aspectRatio === '9:16') w = Math.round(h * (9 / 16));
+      else if (state.aspectRatio === '1:1') w = h;
+      else if (state.aspectRatio === '4:5') w = Math.round(h * (4 / 5));
+
+      canvas.width = w;
+      canvas.height = h;
+      offscreenCanvas.width = w;
+      offscreenCanvas.height = h;
+      fxBufferCanvas.width = w;
+      fxBufferCanvas.height = h;
+
+      document.getElementById('canvasResolutionLabel').textContent = `${w} × ${h}`;
+      fitCanvasToWrapper();
+    }
+
+    function fitCanvasToWrapper() {
+      const wrapper = document.getElementById('previewWrapper');
+      const frame = document.getElementById('canvasFrame');
+      if (!wrapper || !frame) return;
+
+      const pad = 28;
+      const maxW = wrapper.clientWidth - pad;
+      const maxH = wrapper.clientHeight - pad;
+      const aspect = canvas.width / canvas.height;
+
+      let targetW = maxW;
+      let targetH = targetW / aspect;
+      if (targetH > maxH) {
+        targetH = maxH;
+        targetW = targetH * aspect;
+      }
+      frame.style.width = `${Math.max(120, Math.floor(targetW))}px`;
+      frame.style.height = `${Math.max(120, Math.floor(targetH))}px`;
+    }
+
+    // --- MEDIA UPLOAD & BUILT-IN DEMO GENERATOR ---
+    function handleMediaUpload(event) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const isVideo = file.type.startsWith('video/');
+        const isAudio = file.type.startsWith('audio/');
+        const mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
+        if (isVideo) {
+          const vid = document.createElement('video');
+          vid.src = url;
+          vid.muted = false;
+          vid.playsInline = true;
+          vid.preload = 'auto';
+          vid.onloadedmetadata = () => {
+            const dur = Math.min(30, Math.max(2, vid.duration || 6));
+            const item = { id: mediaId, type: 'video', name: file.name, url, element: vid, duration: dur };
+            state.mediaPool.push(item);
+            addMediaClipToTimeline(item);
+            if (state.activeTab === 'media') switchTab('media');
+          };
+        } else if (isAudio) {
+          const aud = new Audio(url);
+          aud.onloadedmetadata = () => {
+            const dur = Math.min(45, Math.max(3, aud.duration || 10));
+            const item = { id: mediaId, type: 'audio', name: file.name, url, element: aud, duration: dur };
+            state.mediaPool.push(item);
+            addAudioClipToTimeline(item);
+            if (state.activeTab === 'audio') switchTab('audio');
+          };
+        } else {
+          const img = new Image();
+          img.src = url;
+          img.onload = () => {
+            const item = { id: mediaId, type: 'image', name: file.name, url, element: img, duration: 5 };
+            state.mediaPool.push(item);
+            addMediaClipToTimeline(item);
+            if (state.activeTab === 'media') switchTab('media');
+          };
+        }
+      });
+      event.target.value = '';
+    }
+
+    function addMediaClipToTimeline(mediaItem) {
+      saveHistory();
+      const videoClips = state.clips.filter(c => c.track === 'video');
+      const start = videoClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+
+      const newClip = {
+        id: 'clip_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        track: 'video',
+        type: mediaItem.type,
+        mediaId: mediaItem.id,
+        mediaElement: mediaItem.element,
+        name: mediaItem.name,
+        start: start,
+        duration: mediaItem.duration,
+        scale: 1,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        speed: 1,
+        flipH: false,
+        flipV: false,
+        volume: 1
+      };
+      state.clips.push(newClip);
+      recalcTotalDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+      showToast(`تمت إضافة "${mediaItem.name}" إلى الخط الزمني`);
+    }
+
+    function addAudioClipToTimeline(mediaItem) {
+      saveHistory();
+      const audioClips = state.clips.filter(c => c.track === 'audio');
+      const start = audioClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+
+      const newClip = {
+        id: 'clip_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        track: 'audio',
+        type: 'audio',
+        mediaId: mediaItem.id,
+        mediaElement: mediaItem.element,
+        name: mediaItem.name,
+        start,
+        duration: mediaItem.duration,
+        volume: 0.85
+      };
+      state.clips.push(newClip);
+      recalcTotalDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+      showToast(`تمت إضافة الصوت "${mediaItem.name}"`);
+    }
+
+    // --- DEMO PROJECT GENERATOR ---
+    function loadDemoProject() {
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+      state.clips = [];
+      state.currentTime = 0;
+
+      const demoClip = {
+        id: 'clip_demo_main',
+        track: 'video',
+        type: 'demo_scene',
+        name: 'مشهد نيون سينمائي جاهز',
+        start: 0,
+        duration: 12,
+        scale: 1,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        speed: 1,
+        flipH: false,
+        flipV: false
+      };
+      state.clips.push(demoClip);
+
+      state.clips.push({
+        id: 'clip_demo_fx1',
+        track: 'effects',
+        type: 'effect',
+        effectId: 'chromatic_split',
+        name: 'فصل ألوان RGB برو',
+        start: 1.5,
+        duration: 3.5,
+        intensity: 0.85,
+        speed: 1.2
+      });
+
+      state.clips.push({
+        id: 'clip_demo_fx2',
+        track: 'effects',
+        type: 'effect',
+        effectId: 'golden_bokeh',
+        name: 'بوكيه وشرار ذهبي',
+        start: 4.5,
+        duration: 5.5,
+        intensity: 0.9,
+        speed: 1.0
+      });
+
+      state.clips.push({
+        id: 'clip_demo_txt',
+        track: 'overlays',
+        type: 'text',
+        name: 'نص: استوديو KAB CUT العالمي',
+        text: 'استوديو KAB CUT العالمي ⚡',
+        start: 0.5,
+        duration: 8.5,
+        x: 0.5,
+        y: 0.76,
+        fontFamily: 'Cairo',
+        fontSize: 68,
+        color: '#ffe600',
+        gradientTo: '#ff9900',
+        strokeColor: '#000000',
+        strokeWidth: 7,
+        bgColor: 'rgba(0, 0, 0, 0)',
+        shadowColor: '#00e5ff',
+        animation: 'bounce',
+        scale: 1,
+        rotation: 0,
+        opacity: 1
+      });
+
+      state.clips.push({
+        id: 'clip_demo_stk',
+        track: 'overlays',
+        type: 'sticker',
+        name: 'ملصق 🔥',
+        emoji: '🔥',
+        start: 1.5,
+        duration: 6.0,
+        x: 0.82,
+        y: 0.24,
+        fontSize: 95,
+        scale: 1,
+        rotation: -10,
+        opacity: 1
+      });
+
+      recalcTotalDuration();
+      selectClip(demoClip.id);
+      renderTimeline();
+      state.isPlaying = true;
+      updatePlayPauseUI();
+      showToast('تم تحميل المشروع التجريبي بنجاح!');
+    }
+
+    function recalcTotalDuration() {
+      const maxEnd = state.clips.reduce((max, c) => Math.max(max, c.start + c.duration), 12);
+      state.duration = Math.ceil(maxEnd);
+      document.getElementById('totalDurationDisplay').textContent = formatTimecode(state.duration);
+    }
+
+    // --- LEFT/RIGHT DRAWER TABS UI ---
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('bg-studio-surface', 'text-studio-cyan');
+        btn.classList.add('text-gray-400');
+      });
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-studio-surface', 'text-studio-cyan');
+        activeBtn.classList.remove('text-gray-400');
+      }
+
+      const container = document.getElementById('drawerContainer');
+      if (tabId === 'media') {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-extrabold text-white">مكتبة الوسائط</h3>
+              <label class="cursor-pointer bg-studio-cyan hover:bg-cyan-300 text-studio-bg font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>استيراد من جهازك</span>
+                <input type="file" accept="video/*,image/*,audio/*" multiple class="hidden" onchange="handleMediaUpload(event)" />
+              </label>
+            </div>
+
+            <!-- Sub-Tabs: Stock Videos | Stock Photos | My Uploads -->
+            <div class="grid grid-cols-3 gap-1 bg-studio-bg p-1 rounded-xl border border-studio-border">
+              <button onclick="setMediaSubTab('videos')" class="py-1.5 rounded-lg text-[11px] font-extrabold transition ${state.mediaSubTab === 'videos' ? 'bg-studio-cyan text-studio-bg shadow' : 'text-gray-400 hover:text-white'}">
+                <i class="fa-solid fa-film ml-1"></i> فيديوهات (${STOCK_VIDEOS_LIBRARY.length})
+              </button>
+              <button onclick="setMediaSubTab('photos')" class="py-1.5 rounded-lg text-[11px] font-extrabold transition ${state.mediaSubTab === 'photos' ? 'bg-studio-cyan text-studio-bg shadow' : 'text-gray-400 hover:text-white'}">
+                <i class="fa-solid fa-image ml-1"></i> صور (${STOCK_PHOTOS_LIBRARY.length})
+              </button>
+              <button onclick="setMediaSubTab('uploads')" class="py-1.5 rounded-lg text-[11px] font-extrabold transition ${state.mediaSubTab === 'uploads' ? 'bg-studio-cyan text-studio-bg shadow' : 'text-gray-400 hover:text-white'}">
+                <i class="fa-solid fa-folder ml-1"></i> ملفاتي (${state.mediaPool.length})
+              </button>
+            </div>
+
+            ${state.mediaSubTab === 'videos' ? `
+              <div class="grid grid-cols-2 gap-2.5">
+                ${STOCK_VIDEOS_LIBRARY.map(vid => `
+                  <button onclick="addStockVideo('${vid.id}')" class="group bg-studio-surface hover:bg-studio-hover border border-studio-border hover:border-studio-cyan rounded-xl p-2 text-right transition overflow-hidden">
+                    <div class="h-20 rounded-lg bg-gradient-to-br ${vid.gradient} flex items-center justify-center mb-1.5 relative overflow-hidden">
+                      <i class="fa-solid ${vid.icon} text-white/90 text-2xl group-hover:scale-125 transition duration-300"></i>
+                      <span class="absolute top-1.5 right-1.5 bg-black/65 text-studio-cyan px-1.5 py-0.5 rounded text-[9px] font-bold">${vid.badge}</span>
+                      <span class="absolute bottom-1.5 left-1.5 bg-black/75 text-white px-1.5 py-0.5 rounded text-[9px] font-mono">${vid.duration}s</span>
+                    </div>
+                    <div class="text-[11px] font-extrabold text-gray-100 truncate">${vid.name}</div>
+                  </button>
+                `).join('')}
+              </div>
+            ` : state.mediaSubTab === 'photos' ? `
+              <div class="grid grid-cols-2 gap-2.5">
+                ${STOCK_PHOTOS_LIBRARY.map(img => `
+                  <button onclick="addStockPhoto('${img.id}')" class="group bg-studio-surface hover:bg-studio-hover border border-studio-border hover:border-purple-400 rounded-xl p-2 text-right transition overflow-hidden">
+                    <div class="h-20 rounded-lg bg-gradient-to-tr ${img.gradient} flex items-center justify-center mb-1.5 relative overflow-hidden border border-white/10">
+                      <i class="fa-regular fa-image text-white/80 text-2xl group-hover:scale-110 transition"></i>
+                      <span class="absolute top-1.5 right-1.5 bg-black/65 text-purple-300 px-1.5 py-0.5 rounded text-[9px] font-bold">${img.badge}</span>
+                    </div>
+                    <div class="text-[11px] font-extrabold text-gray-100 truncate">${img.name}</div>
+                  </button>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="grid grid-cols-2 gap-2.5">
+                ${state.mediaPool.map(item => `
+                  <div onclick='addMediaFromPool("${item.id}")' class="group bg-studio-surface hover:bg-studio-hover border border-studio-border rounded-xl p-2 cursor-pointer transition">
+                    <div class="h-16 rounded-lg bg-black/50 flex items-center justify-center mb-1.5 overflow-hidden relative">
+                      <i class="fa-solid ${item.type === 'video' ? 'fa-video text-cyan-400' : item.type === 'audio' ? 'fa-music text-emerald-400' : 'fa-image text-purple-400'} text-xl"></i>
+                      <span class="absolute bottom-1 left-1 bg-black/75 px-1.5 py-0.5 rounded text-[10px] font-mono">${item.duration.toFixed(1)}s</span>
+                    </div>
+                    <div class="text-[11px] font-bold text-gray-200 truncate">${item.name}</div>
+                  </div>
+                `).join('')}
+              </div>
+              ${state.mediaPool.length === 0 ? `<p class="text-[11px] text-gray-500 text-center py-6">لا توجد ملفات مرفوعة بعد. اضغط على "استيراد من جهازك" أو اختر من مكتبة الفيديوهات والصور الجاهزة.</p>` : ''}
+            `}
+          </div>
+        `;
+      } else if (tabId === 'effects') {
+        const filteredFx = state.fxCategory === 'all'
+          ? CAPCUT_EFFECTS
+          : CAPCUT_EFFECTS.filter(fx => fx.cat === state.fxCategory);
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div>
+              <h3 class="text-sm font-extrabold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-studio-cyan"></i>
+                <span>مكتبة المؤثرات العالمية (24 مؤثر)</span>
+              </h3>
+              <p class="text-[11px] text-gray-400 mt-0.5">اضغط لإضافة المؤثر على الخط الزمني ودمج عدة مؤثرات معاً</p>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="flex flex-wrap gap-1.5">
+              ${GLOBAL_FX_CATEGORIES.map(cat => `
+                <button onclick="setFxCategory('${cat.id}')"
+                  class="px-2.5 py-1 rounded-full text-[11px] font-bold transition ${state.fxCategory === cat.id ? 'bg-studio-cyan text-studio-bg shadow' : 'bg-studio-surface text-gray-300 hover:bg-studio-hover border border-studio-border'}">
+                  ${cat.label}
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- FX Grid -->
+            <div class="grid grid-cols-2 gap-2.5">
+              ${filteredFx.map(fx => `
+                <button onclick="addEffectClip('${fx.id}')" class="bg-studio-surface hover:bg-studio-hover border border-studio-border hover:border-studio-cyan/70 rounded-xl p-2.5 text-right transition group relative overflow-hidden">
+                  <div class="w-9 h-9 rounded-lg bg-gradient-to-tr ${fx.color} flex items-center justify-center text-white mb-2 shadow-md group-hover:scale-110 transition">
+                    <i class="fa-solid ${fx.icon}"></i>
+                  </div>
+                  <div class="text-xs font-extrabold text-gray-100 leading-snug">${fx.name}</div>
+                  <div class="text-[10px] text-gray-400 mt-0.5 line-clamp-1">${fx.desc}</div>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (tabId === 'filters') {
+        container.innerHTML = `
+          <div>
+            <h3 class="text-sm font-extrabold text-white mb-1">فلاتر الألوان السينمائية</h3>
+            <p class="text-[11px] text-gray-400 mb-3">تطبيق فوري على كامل المشهد</p>
+            <div class="grid grid-cols-2 gap-2.5">
+              ${COLOR_FILTERS.map(flt => `
+                <button onclick="applyColorFilter('${flt.id}')" class="p-3 rounded-xl border ${state.adjustments.filter === flt.id ? 'border-studio-cyan bg-studio-cyan/15' : 'border-studio-border bg-studio-surface hover:bg-studio-hover'} text-right transition flex items-center gap-2.5">
+                  <span class="w-4 h-4 rounded-full ${flt.badge} shrink-0 shadow"></span>
+                  <span class="text-xs font-bold text-gray-100">${flt.name}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (tabId === 'text') {
+        container.innerHTML = `
+          <div class="space-y-3.5">
+            <div>
+              <h3 class="text-sm font-extrabold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-font text-amber-400"></i>
+                <span>قوالب النصوص العالمية الجاهزة</span>
+              </h3>
+              <p class="text-[11px] text-gray-400 mt-0.5">اختر قالباً عالمياً أو اكتب نصك الخاص بحركات احترافية</p>
+            </div>
+
+            <!-- Custom Text Quick Creator -->
+            <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2.5">
+              <input id="newTextInput" type="text" value="اكتب نصك الاحترافي هنا" placeholder="أدخل النص..."
+                class="w-full bg-studio-bg border border-studio-border rounded-xl px-3 py-2 text-xs text-white focus:border-studio-cyan focus:outline-none" />
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] text-gray-400 block mb-1">الخط العربي (خطوط تريند)</label>
+                  <select id="newTextFont" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1.5 text-xs text-white">
+                    <option value="Cairo">Cairo (تريند عصري)</option>
+                    <option value="Lalezar">Lalezar (عريض بوسترات)</option>
+                    <option value="Changa">Changa (قوي هورموزي)</option>
+                    <option value="Marhey">Marhey (مرح تريند)</option>
+                    <option value="Aref Ruqaa">Aref Ruqaa (رقعة فني)</option>
+                    <option value="Tajawal">Tajawal (ناعم احترافي)</option>
+                    <option value="IBM Plex Sans Arabic">IBM Plex (تقني عالمي)</option>
+                    <option value="Rubik">Rubik (هندسي جريء)</option>
+                    <option value="Lemonada">Lemonada (يدوي مميز)</option>
+                    <option value="Amiri">Amiri (كلاسيكي فاخر)</option>
+                    <option value="Readex Pro">Readex Pro (حديث)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] text-gray-400 block mb-1">حركة الدخول</label>
+                  <select id="newTextAnim" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1.5 text-xs text-white">
+                    <option value="bounce">ارتداد تريند (Pop)</option>
+                    <option value="typewriter">كتابة تدريجية</option>
+                    <option value="zoom_slam">ضربة زوم سينمائية</option>
+                    <option value="glitch_text">اهتزاز جليتش</option>
+                    <option value="wave">تموج عائم</option>
+                    <option value="pulse">نبض مستمر</option>
+                    <option value="slide">انزلاق جانبي</option>
+                    <option value="fade">ظهور ناعم</option>
+                  </select>
+                </div>
+              </div>
+              <button onclick="addTextOverlay()" class="w-full py-2 rounded-xl bg-studio-cyan hover:bg-cyan-300 text-studio-bg font-extrabold text-xs transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                <span>إضافة نص مخصص</span>
+              </button>
+            </div>
+
+            <!-- World-Class Text Templates Grid -->
+            <div class="space-y-2">
+              <div class="text-xs font-extrabold text-gray-300">قوالب عالمية بضغطة واحدة:</div>
+              <div class="grid grid-cols-1 gap-2">
+                ${PRO_TEXT_TEMPLATES.map(tpl => `
+                  <button onclick="applyTextTemplate('${tpl.id}')" class="bg-studio-surface hover:bg-studio-hover border border-studio-border hover:border-amber-400/70 rounded-xl p-2.5 text-right transition flex items-center justify-between group">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-extrabold text-white">${tpl.name}</span>
+                        <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${tpl.badgeColor}">${tpl.badge}</span>
+                      </div>
+                      <div class="text-sm font-black mt-1" style="font-family: '${tpl.style.fontFamily}', sans-serif; color: ${tpl.style.color}; text-shadow: 0 0 8px ${tpl.style.shadowColor};">
+                        ${tpl.previewText}
+                      </div>
+                    </div>
+                    <i class="fa-solid fa-circle-plus text-gray-500 group-hover:text-studio-cyan text-base transition"></i>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (tabId === 'stickers') {
+        container.innerHTML = `
+          <div>
+            <h3 class="text-sm font-extrabold text-white mb-1">الملصقات والرموز التعبيرية</h3>
+            <p class="text-[11px] text-gray-400 mb-3">اضغط لإضافة ملصق قابل للسحب والتكبير على الشاشة</p>
+            <div class="grid grid-cols-4 gap-2">
+              ${STICKERS_LIST.map(em => `
+                <button onclick="addStickerOverlay('${em}')" class="h-14 rounded-xl bg-studio-surface hover:bg-studio-hover border border-studio-border flex items-center justify-center text-2xl transition transform hover:scale-110">
+                  ${em}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (tabId === 'audio') {
+        const filteredVoices = state.voiceCategory === 'all'
+          ? GLOBAL_50_VOICES
+          : GLOBAL_50_VOICES.filter(v => v.cat === state.voiceCategory);
+        const activeVoiceObj = GLOBAL_50_VOICES.find(v => v.id === state.selectedVoiceId) || GLOBAL_50_VOICES[0];
+
+        container.innerHTML = `
+          <div class="space-y-3.5">
+            <!-- 1. Voiceover Recorder & Magic Studio Enhancer -->
+            <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                  <i class="fa-solid fa-microphone-lines text-rose-400"></i>
+                  <span>مسجل الصوت ومُحسِّن النبرة السحري</span>
+                </h3>
+                <span id="recTimerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/50 text-gray-400">
+                  ${state.isRecordingVoice ? 'جاري التسجيل... ' + state.recSeconds + 's' : 'جاهز'}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="toggleVoiceRecording()" id="recordVoiceBtn"
+                  class="py-2 rounded-xl ${state.isRecordingVoice ? 'bg-rose-600 animate-pulse text-white' : 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300'} font-extrabold text-xs flex items-center justify-center gap-1.5 transition">
+                  <i class="fa-solid ${state.isRecordingVoice ? 'fa-stop' : 'fa-circle'}"></i>
+                  <span>${state.isRecordingVoice ? 'إيقاف وحفظ' : 'سجّل صوتك الآن'}</span>
+                </button>
+
+                <label class="py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition">
+                  <i class="fa-solid fa-file-audio"></i>
+                  <span>رفع صوت/موسيقى</span>
+                  <input type="file" accept="audio/*" class="hidden" onchange="handleMediaUpload(event)" />
+                </label>
+              </div>
+
+              <!-- Quick Magic Voice Beautifier -->
+              <div class="pt-1.5 border-t border-studio-border/60 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold text-amber-300">✨ تجميل وتفخيم صوتك المسجل بضغطة:</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button onclick="applyVoiceProfileToClip('sultan_amir')" class="p-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-amber-500/40 text-[11px] font-extrabold text-amber-300 text-right flex items-center gap-1.5">
+                    <span>👑 سلطان / الأمير</span>
+                  </button>
+                  <button onclick="applyVoiceProfileToClip('saden_rawi')" class="p-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-purple-500/40 text-[11px] font-extrabold text-purple-300 text-right flex items-center gap-1.5">
+                    <span>🎙️ سادن / الراوي</span>
+                  </button>
+                  <button onclick="applyVoiceProfileToClip('athar_intro')" class="p-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-cyan-500/40 text-[11px] font-extrabold text-cyan-300 text-right flex items-center gap-1.5">
+                    <span>⚡ أثر (مقدمات)</span>
+                  </button>
+                  <button onclick="applyVoiceProfileToClip('hams_warm')" class="p-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-pink-500/40 text-[11px] font-extrabold text-pink-300 text-right flex items-center gap-1.5">
+                    <span>✨ همس (دافئ)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 50 Global Voices Library & AI Generator -->
+            <div class="bg-gradient-to-b from-purple-950/30 to-studio-surface p-3 rounded-xl border border-purple-500/40 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                  <i class="fa-solid fa-crown text-amber-400"></i>
+                  <span>مكتبة الـ 50 صوتاً العالمية (من الأفخم للأحدث)</span>
+                </h3>
+                <span class="text-[9px] bg-studio-cyan text-studio-bg font-black px-1.5 py-0.5 rounded">50 VOICES</span>
+              </div>
+
+              <textarea id="aiTtsTextInput" rows="2" placeholder="اكتب النص هنا لينطقه الصوت المختار بفخامة..."
+                class="w-full bg-studio-bg border border-studio-border rounded-xl p-2 text-xs text-white focus:border-studio-cyan focus:outline-none">أهلاً بكم في عالم الإبداع، هنا نصنع محتوى يترك أثراً لا يُنسى!</textarea>
+
+              <!-- Voice Categories Filter -->
+              <div class="flex flex-wrap gap-1">
+                ${VOICE_CATEGORIES.map(vc => `
+                  <button onclick="setVoiceCategory('${vc.id}')"
+                    class="px-2 py-1 rounded-full text-[10px] font-bold transition ${state.voiceCategory === vc.id ? 'bg-studio-cyan text-studio-bg shadow' : 'bg-studio-bg text-gray-300 hover:bg-studio-hover border border-studio-border'}">
+                    ${vc.label}
+                  </button>
+                `).join('')}
+              </div>
+
+              <!-- 50 Voices Ranked Scrollable List -->
+              <div class="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                ${filteredVoices.map(v => {
+                  const isSel = v.id === state.selectedVoiceId;
+                  return `
+                    <div onclick="selectGlobalVoice('${v.id}')"
+                      class="p-2 rounded-xl border ${isSel ? 'border-studio-cyan bg-studio-cyan/15 shadow' : 'border-studio-border bg-studio-bg/90 hover:border-gray-500'} cursor-pointer transition flex items-center justify-between gap-2">
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-[10px] font-black px-1.5 py-0.5 rounded ${v.rank <= 4 ? 'bg-amber-400 text-black' : 'bg-studio-surface text-studio-cyan'} shrink-0">${v.badge}</span>
+                          <span class="text-[11px] font-extrabold text-white truncate">${v.name}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 truncate mt-0.5">${v.desc}</div>
+                      </div>
+                      <button onclick="event.stopPropagation(); applyVoiceProfileToClip('${v.id}')" title="تطبيق تون هذا الصوت على تسجيلك الحالي"
+                        class="px-2 py-1 rounded-lg bg-studio-surface hover:bg-studio-cyan hover:text-studio-bg text-[10px] font-bold text-gray-200 border border-studio-border shrink-0 transition">
+                        تطبيق التون
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <button id="generateAiVoiceBtn" onclick="generateAiDialectVoice()"
+                class="w-full py-2.5 rounded-xl bg-gradient-to-l from-studio-cyan to-purple-500 text-studio-bg font-extrabold text-xs shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>توليد بصوت: ${activeVoiceObj.name.split('(')[0].trim()}</span>
+              </button>
+            </div>
+
+            <!-- 3. Trend Sound Effects Library (SFX) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                  <i class="fa-solid fa-volume-high text-amber-400"></i>
+                  <span>مكتبة المؤثرات الصوتية التريند (SFX)</span>
+                </h3>
+                <button onclick="generateSynthBeat()" class="text-[10px] text-studio-cyan hover:underline font-bold">+ إيقاع خلفية</button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                ${TREND_SFX_LIST.map(sfx => `
+                  <button onclick="addTrendSfx('${sfx.id}')" class="p-2.5 rounded-xl bg-studio-surface hover:bg-studio-hover border border-studio-border hover:border-emerald-400/60 text-right transition flex items-center gap-2">
+                    <i class="fa-solid ${sfx.icon} ${sfx.color} text-sm"></i>
+                    <div class="min-w-0">
+                      <div class="text-[11px] font-bold text-gray-100 truncate">${sfx.name}</div>
+                      <div class="text-[9px] font-mono text-gray-400">${sfx.dur}s</div>
+                    </div>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (tabId === 'adjust') {
+        const a = state.adjustments;
+        container.innerHTML = `
+          <div class="space-y-3.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-extrabold text-white">الضبط اليدوي للألوان</h3>
+              <button onclick="resetAdjustments()" class="text-[11px] text-studio-cyan hover:underline">إعادة ضبط</button>
+            </div>
+            ${renderSliderControl('السطوع', 'brightness', a.brightness, 30, 200, '%')}
+            ${renderSliderControl('التباين', 'contrast', a.contrast, 30, 200, '%')}
+            ${renderSliderControl('التشبع اللوني', 'saturate', a.saturate, 0, 250, '%')}
+            ${renderSliderControl('درجة اللون (Hue)', 'hue', a.hue, -180, 180, '°')}
+            ${renderSliderControl('الضبابية (Blur)', 'blur', a.blur, 0, 20, 'px')}
+          </div>
+        `;
+      }
+    }
+
+    function renderSliderControl(label, key, val, min, max, unit) {
+      return `
+        <div class="bg-studio-surface p-2.5 rounded-xl border border-studio-border">
+          <div class="flex justify-between text-xs mb-1.5">
+            <span class="font-bold text-gray-200">${label}</span>
+            <span id="val-${key}" class="font-mono text-studio-cyan font-bold">${val}${unit}</span>
+          </div>
+          <input type="range" min="${min}" max="${max}" value="${val}"
+            oninput="updateAdjustment('${key}', this.value, '${unit}')" class="w-full" />
+        </div>
+      `;
+    }
+
+    function updateAdjustment(key, val, unit) {
+      state.adjustments[key] = parseFloat(val);
+      const labelEl = document.getElementById(`val-${key}`);
+      if (labelEl) labelEl.textContent = `${val}${unit}`;
+    }
+
+    function resetAdjustments() {
+      state.adjustments = { brightness: 100, contrast: 100, saturate: 100, hue: 0, blur: 0, filter: 'none' };
+      switchTab('adjust');
+      showToast('تمت إعادة ضبط الألوان');
+    }
+
+    function applyColorFilter(filterId) {
+      state.adjustments.filter = filterId;
+      switchTab('filters');
+      const flt = COLOR_FILTERS.find(f => f.id === filterId);
+      showToast(`تم تطبيق فلتر "${flt ? flt.name : filterId}"`);
+    }
+
+    function addMediaFromPool(mediaId) {
+      const item = state.mediaPool.find(m => m.id === mediaId);
+      if (!item) return;
+      if (item.type === 'audio') addAudioClipToTimeline(item);
+      else addMediaClipToTimeline(item);
+    }
+
+    function setFxCategory(catId) {
+      state.fxCategory = catId;
+      switchTab('effects');
+    }
+
+    function setMediaSubTab(sub) {
+      state.mediaSubTab = sub;
+      switchTab('media');
+    }
+
+    function addStockVideo(stockId) {
+      const item = STOCK_VIDEOS_LIBRARY.find(v => v.id === stockId);
+      if (!item) return;
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+
+      const videoClips = state.clips.filter(c => c.track === 'video');
+      const start = videoClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+
+      const newClip = {
+        id: 'clip_' + Date.now(),
+        track: 'video',
+        type: 'stock_video',
+        stockId: item.id,
+        name: `فيديو: ${item.name}`,
+        start,
+        duration: item.duration,
+        scale: 1,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        speed: 1,
+        flipH: false,
+        flipV: false
+      };
+      state.clips.push(newClip);
+      recalcTotalDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+      showToast(`تمت إضافة فيديو "${item.name}" إلى الخط الزمني`);
+    }
+
+    function addStockPhoto(photoId) {
+      const item = STOCK_PHOTOS_LIBRARY.find(p => p.id === photoId);
+      if (!item) return;
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+
+      const imgCanvas = document.createElement('canvas');
+      imgCanvas.width = 1920;
+      imgCanvas.height = 1080;
+      const ic = imgCanvas.getContext('2d');
+
+      const grad = ic.createLinearGradient(0, 0, 1920, 1080);
+      grad.addColorStop(0, item.c1);
+      grad.addColorStop(1, item.c2);
+      ic.fillStyle = grad;
+      ic.fillRect(0, 0, 1920, 1080);
+
+      const rad = ic.createRadialGradient(960, 540, 80, 960, 540, 850);
+      rad.addColorStop(0, item.accent + '44');
+      rad.addColorStop(1, 'transparent');
+      ic.fillStyle = rad;
+      ic.fillRect(0, 0, 1920, 1080);
+
+      ic.strokeStyle = item.accent + '55';
+      ic.lineWidth = 4;
+      ic.strokeRect(80, 80, 1760, 920);
+
+      const videoClips = state.clips.filter(c => c.track === 'video');
+      const start = videoClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+
+      const newClip = {
+        id: 'clip_' + Date.now(),
+        track: 'video',
+        type: 'image',
+        mediaElement: imgCanvas,
+        name: `صورة: ${item.name}`,
+        start,
+        duration: 5,
+        scale: 1,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        flipH: false,
+        flipV: false
+      };
+      state.clips.push(newClip);
+      recalcTotalDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+      showToast(`تمت إضافة صورة "${item.name}" إلى الخط الزمني`);
+    }
+
+    // --- ADD EFFECTS, TEXT, STICKERS, SYNTH BEAT ---
+    function addEffectClip(effectId) {
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+      const fxDef = CAPCUT_EFFECTS.find(e => e.id === effectId);
+      const newFx = {
+        id: 'fx_' + Date.now(),
+        track: 'effects',
+        type: 'effect',
+        effectId,
+        name: fxDef.name,
+        start: state.currentTime,
+        duration: 3.5,
+        intensity: 0.85,
+        speed: 1.0
+      };
+      state.clips.push(newFx);
+      recalcTotalDuration();
+      selectClip(newFx.id);
+      renderTimeline();
+      showToast(`تمت إضافة مؤثر "${fxDef.name}"`);
+    }
+
+    function applyTextTemplate(tplId) {
+      const tpl = PRO_TEXT_TEMPLATES.find(t => t.id === tplId);
+      if (!tpl) return;
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+
+      const customInput = document.getElementById('newTextInput');
+      const textVal = (customInput && customInput.value && customInput.value !== 'اكتب نصك الاحترافي هنا')
+        ? customInput.value.trim()
+        : tpl.previewText;
+
+      const newTxt = {
+        id: 'txt_' + Date.now(),
+        track: 'overlays',
+        type: 'text',
+        name: `${tpl.name}: ${textVal.slice(0, 12)}`,
+        text: textVal,
+        start: state.currentTime,
+        duration: 4.5,
+        x: 0.5,
+        y: tpl.id === 'breaking_news' ? 0.84 : 0.5,
+        ...tpl.style,
+        scale: 1,
+        rotation: 0,
+        opacity: 1
+      };
+      state.clips.push(newTxt);
+      recalcTotalDuration();
+      selectClip(newTxt.id);
+      renderTimeline();
+      showToast(`تم تطبيق قالب "${tpl.name}"`);
+    }
+
+    function addTextOverlay() {
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+      const txt = document.getElementById('newTextInput').value.trim() || 'نص جديد';
+      const anim = document.getElementById('newTextAnim').value;
+      const font = document.getElementById('newTextFont').value;
+
+      const newTxt = {
+        id: 'txt_' + Date.now(),
+        track: 'overlays',
+        type: 'text',
+        name: `نص: ${txt.slice(0, 14)}`,
+        text: txt,
+        start: state.currentTime,
+        duration: 4.0,
+        x: 0.5,
+        y: 0.5,
+        fontFamily: font,
+        fontSize: 64,
+        color: '#ffffff',
+        gradientTo: '#00e5ff',
+        strokeColor: '#000000',
+        strokeWidth: 5,
+        bgColor: 'rgba(15, 17, 21, 0.65)',
+        shadowColor: '#00e5ff',
+        animation: anim,
+        scale: 1,
+        rotation: 0,
+        opacity: 1
+      };
+      state.clips.push(newTxt);
+      recalcTotalDuration();
+      selectClip(newTxt.id);
+      renderTimeline();
+      showToast('تمت إضافة النص إلى الشاشة');
+    }
+
+    function addStickerOverlay(emoji) {
+      document.getElementById('emptyStateOverlay').classList.add('hidden');
+      saveHistory();
+      const newStk = {
+        id: 'stk_' + Date.now(),
+        track: 'overlays',
+        type: 'sticker',
+        name: `ملصق ${emoji}`,
+        emoji,
+        start: state.currentTime,
+        duration: 4.0,
+        x: 0.5,
+        y: 0.45,
+        fontSize: 90,
+        scale: 1,
+        rotation: 0,
+        opacity: 1
+      };
+      state.clips.push(newStk);
+      recalcTotalDuration();
+      selectClip(newStk.id);
+      renderTimeline();
+      showToast(`تمت إضافة الملصق ${emoji}`);
+    }
+
+    function generateSynthBeat() {
+      const sampleRate = 22050;
+      const seconds = 6;
+      const numSamples = sampleRate * seconds;
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+
+      const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        const beat = (t * 2) % 1;
+        const kick = Math.sin(2 * Math.PI * (120 * Math.exp(-beat * 12)) * t) * Math.exp(-beat * 6);
+        const hihat = (Math.random() * 2 - 1) * Math.exp(-((t * 4) % 1) * 25) * 0.25;
+        const sample = Math.max(-1, Math.min(1, (kick + hihat) * 0.6));
+        view.setInt16(44 + i * 2, sample * 32767, true);
+      }
+
+      const blob = new Blob([buffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const aud = new Audio(url);
+      const item = { id: 'synth_' + Date.now(), type: 'audio', name: 'إيقاع إلكتروني مدمج', url, element: aud, duration: seconds };
+      state.mediaPool.push(item);
+      addAudioClipToTimeline(item);
+    }
+
+    // --- PROPERTIES INSPECTOR (LEFT PANEL) ---
+    function selectClip(id) {
+      state.selectedClipId = id;
+      renderTimeline();
+      renderInspector();
+    }
+
+    function renderInspector() {
+      const container = document.getElementById('inspectorContainer');
+      const badge = document.getElementById('selectedTypeBadge');
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+
+      if (!clip) {
+        badge.textContent = 'لا يوجد';
+        container.innerHTML = `
+          <div class="text-center text-gray-500 text-xs py-12 space-y-2">
+            <i class="fa-regular fa-hand-pointer text-2xl block text-gray-600"></i>
+            <p>اختر مقطعاً أو نصاً أو مؤثراً من الخط الزمني لتعديل خصائصه وحركته</p>
+          </div>`;
+        return;
+      }
+
+      badge.textContent = clip.track === 'video' ? 'فيديو / صورة' : clip.track === 'effects' ? 'مؤثر بصري' : clip.track === 'overlays' ? 'طبقة علوية' : 'صوت';
+
+      let html = `
+        <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2">
+          <div class="text-xs font-extrabold text-studio-cyan truncate">${clip.name}</div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] font-mono text-gray-400">
+            <div>البداية: <span class="text-white">${clip.start.toFixed(1)}s</span></div>
+            <div>المدة: <span class="text-white">${clip.duration.toFixed(1)}s</span></div>
+          </div>
+        </div>
+      `;
+
+      if (clip.type === 'effect') {
+        html += `
+          <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-bold">قوة المؤثر (Intensity)</span>
+                <span class="font-mono text-studio-cyan">${Math.round(clip.intensity * 100)}%</span>
+              </div>
+              <input type="range" min="0.1" max="1" step="0.05" value="${clip.intensity}"
+                oninput="updateClipProp('intensity', parseFloat(this.value))" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-bold">سرعة الحركة (Speed)</span>
+                <span class="font-mono text-purple-400">${(clip.speed || 1).toFixed(1)}x</span>
+              </div>
+              <input type="range" min="0.2" max="3" step="0.1" value="${clip.speed || 1}"
+                oninput="updateClipProp('speed', parseFloat(this.value))" class="w-full" />
+            </div>
+          </div>
+        `;
+      }
+
+      if (clip.type === 'text') {
+        html += `
+          <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2.5">
+            <label class="text-xs font-bold text-gray-300 block">محتوى النص</label>
+            <input type="text" value="${clip.text}" oninput="updateClipProp('text', this.value)"
+              class="w-full bg-studio-bg border border-studio-border rounded-lg px-2.5 py-1.5 text-xs text-white" />
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[11px] text-gray-400 block mb-1">نوع الخط</label>
+                <select onchange="updateClipProp('fontFamily', this.value)" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1 text-xs text-white">
+                  <option value="Cairo" ${clip.fontFamily === 'Cairo' ? 'selected' : ''}>Cairo (عصري)</option>
+                  <option value="Lalezar" ${clip.fontFamily === 'Lalezar' ? 'selected' : ''}>Lalezar (تريند عريض)</option>
+                  <option value="Changa" ${clip.fontFamily === 'Changa' ? 'selected' : ''}>Changa (قوي)</option>
+                  <option value="Marhey" ${clip.fontFamily === 'Marhey' ? 'selected' : ''}>Marhey (مرح)</option>
+                  <option value="Aref Ruqaa" ${clip.fontFamily === 'Aref Ruqaa' ? 'selected' : ''}>Aref Ruqaa (رقعة)</option>
+                  <option value="Tajawal" ${clip.fontFamily === 'Tajawal' ? 'selected' : ''}>Tajawal</option>
+                  <option value="IBM Plex Sans Arabic" ${clip.fontFamily === 'IBM Plex Sans Arabic' ? 'selected' : ''}>IBM Plex</option>
+                  <option value="Rubik" ${clip.fontFamily === 'Rubik' ? 'selected' : ''}>Rubik</option>
+                  <option value="Lemonada" ${clip.fontFamily === 'Lemonada' ? 'selected' : ''}>Lemonada</option>
+                  <option value="Amiri" ${clip.fontFamily === 'Amiri' ? 'selected' : ''}>Amiri</option>
+                  <option value="Readex Pro" ${clip.fontFamily === 'Readex Pro' ? 'selected' : ''}>Readex Pro</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] text-gray-400 block mb-1">الحركة</label>
+                <select onchange="updateClipProp('animation', this.value)" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1 text-xs text-white">
+                  <option value="none" ${clip.animation === 'none' ? 'selected' : ''}>ثابت</option>
+                  <option value="bounce" ${clip.animation === 'bounce' ? 'selected' : ''}>ارتداد تريند</option>
+                  <option value="typewriter" ${clip.animation === 'typewriter' ? 'selected' : ''}>كتابة تدريجية</option>
+                  <option value="zoom_slam" ${clip.animation === 'zoom_slam' ? 'selected' : ''}>ضربة زوم</option>
+                  <option value="glitch_text" ${clip.animation === 'glitch_text' ? 'selected' : ''}>جليتش</option>
+                  <option value="wave" ${clip.animation === 'wave' ? 'selected' : ''}>تموج عائم</option>
+                  <option value="pulse" ${clip.animation === 'pulse' ? 'selected' : ''}>نبض</option>
+                  <option value="slide" ${clip.animation === 'slide' ? 'selected' : ''}>انزلاق</option>
+                  <option value="fade" ${clip.animation === 'fade' ? 'selected' : ''}>ظهور تدريجي</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-1">
+              <div>
+                <label class="text-[10px] text-gray-400 block mb-1">لون أساسي</label>
+                <input type="color" value="${clip.color}" oninput="updateClipProp('color', this.value)" class="w-full h-7 rounded cursor-pointer" />
+              </div>
+              <div>
+                <label class="text-[10px] text-gray-400 block mb-1">لون التدرج</label>
+                <input type="color" value="${clip.gradientTo || clip.color}" oninput="updateClipProp('gradientTo', this.value)" class="w-full h-7 rounded cursor-pointer" />
+              </div>
+              <div>
+                <label class="text-[10px] text-gray-400 block mb-1">لون الحدود</label>
+                <input type="color" value="${clip.strokeColor || '#000000'}" oninput="updateClipProp('strokeColor', this.value)" class="w-full h-7 rounded cursor-pointer" />
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>سمك الحدود (Outline)</span>
+                <span class="font-mono text-studio-cyan">${clip.strokeWidth || 0}px</span>
+              </div>
+              <input type="range" min="0" max="14" step="1" value="${clip.strokeWidth || 0}"
+                oninput="updateClipProp('strokeWidth', parseInt(this.value, 10))" class="w-full" />
+            </div>
+          </div>
+        `;
+      }
+
+      if (clip.track === 'video' || clip.track === 'overlays') {
+        html += `
+          <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-gray-200">التحكم بالحجم والموقع (Zoom & Move)</span>
+              <button onclick="resetClipTransform()" class="text-[10px] text-studio-cyan hover:underline">إعادة ضبط</button>
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>التكبير / التصغير (Zoom)</span>
+                <span class="font-mono text-studio-cyan">${Math.round((clip.scale || 1) * 100)}%</span>
+              </div>
+              <input type="range" min="0.15" max="3.5" step="0.05" value="${clip.scale || 1}"
+                oninput="updateClipProp('scale', parseFloat(this.value))" class="w-full" />
+              <div class="grid grid-cols-4 gap-1 mt-1.5">
+                <button onclick="updateClipProp('scale', 0.5)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">50%</button>
+                <button onclick="updateClipProp('scale', 1.0)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">100%</button>
+                <button onclick="updateClipProp('scale', 1.5)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">150%</button>
+                <button onclick="updateClipProp('scale', 2.0)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">200%</button>
+              </div>
+            </div>
+            ${clip.track === 'video' ? `
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] text-gray-400 block mb-1">إزاحة أفقية X</label>
+                  <input type="range" min="-600" max="600" step="5" value="${clip.x || 0}"
+                    oninput="updateClipProp('x', parseFloat(this.value))" class="w-full" />
+                </div>
+                <div>
+                  <label class="text-[10px] text-gray-400 block mb-1">إزاحة رأسية Y</label>
+                  <input type="range" min="-600" max="600" step="5" value="${clip.y || 0}"
+                    oninput="updateClipProp('y', parseFloat(this.value))" class="w-full" />
+                </div>
+              </div>
+            ` : ''}
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>الدوران (Rotation)</span>
+                <span class="font-mono text-studio-cyan">${clip.rotation || 0}°</span>
+              </div>
+              <input type="range" min="-180" max="180" step="1" value="${clip.rotation || 0}"
+                oninput="updateClipProp('rotation', parseFloat(this.value))" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>الشفافية (Opacity)</span>
+                <span class="font-mono text-studio-cyan">${Math.round((clip.opacity ?? 1) * 100)}%</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" value="${clip.opacity ?? 1}"
+                oninput="updateClipProp('opacity', parseFloat(this.value))" class="w-full" />
+            </div>
+            ${clip.track === 'video' ? `
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="updateClipProp('flipH', !${!!clip.flipH})" class="py-1.5 rounded-lg bg-studio-bg hover:bg-studio-hover border border-studio-border text-[11px] font-bold">
+                  <i class="fa-solid fa-left-right ml-1 text-studio-cyan"></i> قلب أفقي
+                </button>
+                <button onclick="updateClipProp('flipV', !${!!clip.flipV})" class="py-1.5 rounded-lg bg-studio-bg hover:bg-studio-hover border border-studio-border text-[11px] font-bold">
+                  <i class="fa-solid fa-up-down ml-1 text-studio-cyan"></i> قلب عمودي
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      if (clip.type === 'video' || clip.type === 'audio') {
+        html += `
+          <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-bold">مستوى صوت المقطع</span>
+                <span class="font-mono text-emerald-400">${Math.round((clip.volume ?? 1) * 100)}%</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" value="${clip.volume ?? 1}"
+                oninput="updateClipProp('volume', parseFloat(this.value))" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-bold">نبرة / تون الصوت (Pitch Tone)</span>
+                <span class="font-mono text-amber-400">${(clip.pitchRate || 1).toFixed(2)}x</span>
+              </div>
+              <input type="range" min="0.65" max="1.45" step="0.05" value="${clip.pitchRate || 1}"
+                oninput="updateClipPitch(parseFloat(this.value))" class="w-full" />
+              <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>عميق فخم</span>
+                <span>طبيعي</span>
+                <span>أنثوي/حاد</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function resetClipTransform() {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip) return;
+      clip.scale = 1;
+      clip.rotation = 0;
+      if (clip.track === 'video') {
+        clip.x = 0;
+        clip.y = 0;
+      } else {
+        clip.x = 0.5;
+        clip.y = 0.5;
+      }
+      renderInspector();
+      showToast('تمت إعادة ضبط الحجم والموقع');
+    }
+
+    function updateClipPitch(rate) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip) return;
+      clip.pitchRate = rate;
+      if (clip.mediaElement) {
+        clip.mediaElement.preservesPitch = false;
+        clip.mediaElement.playbackRate = rate;
+      }
+      renderInspector();
+    }
+
+    // --- WEB AUDIO STUDIO VOICE BEAUTIFIER & TONE ENHANCER ---
+    const enhancedAudioNodes = new WeakMap();
+
+    function applyStudioAudioDSP(mediaElement, profile) {
+      if (!mediaElement || typeof mediaElement.play !== 'function') return;
+      try {
+        if (!window._studioAudioCtx) {
+          window._studioAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const actx = window._studioAudioCtx;
+        if (actx.state === 'suspended') actx.resume();
+
+        let chain = enhancedAudioNodes.get(mediaElement);
+        if (!chain) {
+          const source = actx.createMediaElementSource(mediaElement);
+          const bassFilter = actx.createBiquadFilter();
+          bassFilter.type = 'lowshelf';
+          bassFilter.frequency.value = 140;
+
+          const presenceFilter = actx.createBiquadFilter();
+          presenceFilter.type = 'peaking';
+          presenceFilter.frequency.value = 3200;
+          presenceFilter.Q.value = 1.1;
+
+          const compressor = actx.createDynamicsCompressor();
+          compressor.threshold.value = -24;
+          compressor.knee.value = 18;
+          compressor.ratio.value = 5;
+          compressor.attack.value = 0.005;
+          compressor.release.value = 0.2;
+
+          const delay = actx.createDelay();
+          delay.delayTime.value = 0.09;
+          const echoGain = actx.createGain();
+          echoGain.gain.value = 0;
+
+          source.connect(bassFilter);
+          bassFilter.connect(presenceFilter);
+          presenceFilter.connect(compressor);
+          compressor.connect(actx.destination);
+
+          compressor.connect(delay);
+          delay.connect(echoGain);
+          echoGain.connect(actx.destination);
+
+          chain = { bassFilter, presenceFilter, echoGain };
+          enhancedAudioNodes.set(mediaElement, chain);
+        }
+
+        chain.bassFilter.gain.value = profile.bassGain ?? 8;
+        chain.presenceFilter.gain.value = profile.presenceGain ?? 7;
+        chain.echoGain.gain.value = profile.echoMix ?? 0.12;
+      } catch (e) {
+        // Fallback smoothly if CORS or element already routed
+      }
+    }
+
+    function setVoiceCategory(catId) {
+      state.voiceCategory = catId;
+      switchTab('audio');
+    }
+
+    function selectGlobalVoice(voiceId) {
+      state.selectedVoiceId = voiceId;
+      switchTab('audio');
+    }
+
+    function applyVoiceProfileToClip(voiceId) {
+      const profile = GLOBAL_50_VOICES.find(v => v.id === voiceId) || GLOBAL_50_VOICES[0];
+      state.selectedVoiceId = profile.id;
+
+      let clip = state.clips.find(c => c.id === state.selectedClipId && (c.type === 'audio' || c.type === 'video'));
+      if (!clip) {
+        clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
+      }
+      if (!clip) {
+        switchTab('audio');
+        return showToast(`تم اختيار "${profile.name}" - سجّل صوتك أو اكتب نصاً لتوليده!`);
+      }
+
+      selectClip(clip.id);
+      clip.pitchRate = profile.pitch;
+      clip.voiceProfile = profile;
+      if (clip.mediaElement) {
+        clip.mediaElement.preservesPitch = false;
+        clip.mediaElement.playbackRate = profile.pitch;
+        applyStudioAudioDSP(clip.mediaElement, profile);
+      }
+      switchTab('audio');
+      renderInspector();
+      showToast(`✨ تم تحسين الصوت وتطبيق تون "${profile.name.split('(')[0].trim()}" بنجاح!`);
+    }
+
+    function updateClipProp(prop, val) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip) return;
+      clip[prop] = val;
+      if (prop === 'text') clip.name = `نص: ${val.slice(0, 14)}`;
+      renderInspector();
+      renderTimeline();
+    }
+
+    // --- TIMELINE RENDERING & INTERACTION ---
+    function setTimelineZoom(px) {
+      state.pxPerSec = parseInt(px, 10);
+      renderTimeline();
+    }
+
+    function toggleSnap() {
+      state.snapEnabled = !state.snapEnabled;
+      const btn = document.getElementById('snapBtn');
+      if (state.snapEnabled) {
+        btn.className = 'px-2.5 py-1 rounded-lg bg-studio-cyan/20 text-studio-cyan border border-studio-cyan/40 text-xs font-bold flex items-center gap-1.5 transition';
+      } else {
+        btn.className = 'px-2.5 py-1 rounded-lg bg-studio-surface text-gray-400 border border-studio-border text-xs font-bold flex items-center gap-1.5 transition';
+      }
+    }
+
+    function renderTimeline() {
+      const totalWidth = Math.max(1200, (state.duration + 5) * state.pxPerSec);
+      const content = document.getElementById('timelineContent');
+      content.style.width = `${totalWidth}px`;
+
+      const ruler = document.getElementById('timeRuler');
+      let ticksHtml = '';
+      for (let s = 0; s <= state.duration + 4; s++) {
+        const rightPx = s * state.pxPerSec;
+        ticksHtml += `
+          <div class="absolute top-0 bottom-0 border-r border-gray-600/60 text-[10px] font-mono text-gray-400 pr-1 pt-0.5 pointer-events-none" style="right: ${rightPx}px;">
+            ${s}s
+          </div>
+        `;
+      }
+      ruler.innerHTML = ticksHtml;
+
+      ['effects', 'overlays', 'video', 'audio'].forEach(t => {
+        document.getElementById(`track-${t}`).innerHTML = '';
+      });
+
+      state.clips.forEach(clip => {
+        const trackEl = document.getElementById(`track-${clip.track}`);
+        if (!trackEl) return;
+
+        const rightPx = clip.start * state.pxPerSec;
+        const widthPx = Math.max(24, clip.duration * state.pxPerSec);
+        const isSelected = clip.id === state.selectedClipId;
+
+        let bgClass = 'bg-cyan-600/80 border-cyan-400';
+        if (clip.track === 'effects') bgClass = 'bg-purple-600/80 border-purple-400';
+        else if (clip.track === 'overlays') bgClass = 'bg-amber-600/80 border-amber-400';
+        else if (clip.track === 'audio') bgClass = 'bg-emerald-600/80 border-emerald-400';
+
+        const el = document.createElement('div');
+        el.className = `absolute top-1 bottom-1 rounded-lg border ${bgClass} ${isSelected ? 'ring-2 ring-white z-20 shadow-lg' : 'opacity-90 hover:opacity-100'} flex items-center justify-between overflow-hidden cursor-grab active:cursor-grabbing transition-shadow`;
+        el.style.right = `${rightPx}px`;
+        el.style.width = `${widthPx}px`;
+
+        el.innerHTML = `
+          <div class="clip-handle h-full bg-black/25 shrink-0" data-resize="start" data-id="${clip.id}"></div>
+          <div class="flex-1 px-2 truncate text-[11px] font-bold text-white pointer-events-none">
+            ${clip.name}
+          </div>
+          <div class="clip-handle h-full bg-black/25 shrink-0" data-resize="end" data-id="${clip.id}"></div>
+        `;
+
+        el.onmousedown = (e) => {
+          e.stopPropagation();
+          selectClip(clip.id);
+          const resizeMode = e.target.getAttribute('data-resize');
+          startClipDrag(e, clip, resizeMode);
+        };
+
+        trackEl.appendChild(el);
+      });
+
+      updatePlayheadPosition();
+    }
+
+    function startClipDrag(e, clip, resizeMode) {
+      saveHistory();
+      const startX = e.clientX;
+      const origStart = clip.start;
+      const origDuration = clip.duration;
+
+      const onMove = (ev) => {
+        const deltaPx = startX - ev.clientX;
+        const deltaSec = deltaPx / state.pxPerSec;
+
+        if (resizeMode === 'start') {
+          let newStart = Math.max(0, origStart + deltaSec);
+          const maxStart = origStart + origDuration - 0.5;
+          newStart = Math.min(newStart, maxStart);
+          clip.duration = origDuration - (newStart - origStart);
+          clip.start = newStart;
+        } else if (resizeMode === 'end') {
+          clip.duration = Math.max(0.5, origDuration + deltaSec);
+        } else {
+          let newStart = Math.max(0, origStart + deltaSec);
+          if (state.snapEnabled && Math.abs(newStart - state.currentTime) < 0.25) {
+            newStart = state.currentTime;
+          }
+          clip.start = newStart;
+        }
+        recalcTotalDuration();
+        renderTimeline();
+        renderInspector();
+      };
+
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    }
+
+    function handleTimelineMouseDown(e) {
+      const content = document.getElementById('timelineContent');
+      const updateScrub = (ev) => {
+        const rect = content.getBoundingClientRect();
+        const offsetFromRight = rect.right - ev.clientX;
+        const newTime = Math.max(0, Math.min(state.duration, offsetFromRight / state.pxPerSec));
+        seekTo(newTime);
+      };
+      updateScrub(e);
+
+      const onMove = (ev) => updateScrub(ev);
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    }
+
+    function updatePlayheadPosition() {
+      const playhead = document.getElementById('playhead');
+      if (playhead) {
+        playhead.style.right = `${state.currentTime * state.pxPerSec}px`;
+      }
+      document.getElementById('currentTimeDisplay').textContent = formatTimecode(state.currentTime);
+    }
+
+    // --- TIMELINE EDITING TOOLS (SPLIT, DUPLICATE, DELETE) ---
+    function splitSelectedClip() {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip) return showToast('اختر مقطعاً أولاً لتقسيمه');
+
+      const t = state.currentTime;
+      if (t <= clip.start + 0.2 || t >= clip.start + clip.duration - 0.2) {
+        return showToast('حرّك مؤشر التشغيل داخل المقطع لتقسيمه');
+      }
+
+      saveHistory();
+      const firstPartDur = t - clip.start;
+      const secondPartDur = clip.duration - firstPartDur;
+
+      clip.duration = firstPartDur;
+
+      const secondClip = {
+        ...clip,
+        id: 'clip_' + Date.now(),
+        start: t,
+        duration: secondPartDur
+      };
+      state.clips.push(secondClip);
+      selectClip(secondClip.id);
+      renderTimeline();
+      showToast('تم تقسيم المقطع عند المؤشر');
+    }
+
+    function duplicateSelectedClip() {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip) return showToast('اختر مقطعاً لتكراره');
+      saveHistory();
+      const copy = {
+        ...clip,
+        id: 'clip_' + Date.now(),
+        start: clip.start + clip.duration + 0.2
+      };
+      state.clips.push(copy);
+      recalcTotalDuration();
+      selectClip(copy.id);
+      renderTimeline();
+      showToast('تم تكرار المقطع');
+    }
+
+    function deleteSelectedClip() {
+      if (!state.selectedClipId) return showToast('لا يوجد عنصر محدد للحذف');
+      saveHistory();
+      state.clips = state.clips.filter(c => c.id !== state.selectedClipId);
+      state.selectedClipId = null;
+      recalcTotalDuration();
+      renderTimeline();
+      renderInspector();
+      showToast('تم حذف العنصر');
+    }
+
+    // --- PLAYBACK & MEDIA SYNC ---
+    function togglePlay() {
+      state.isPlaying = !state.isPlaying;
+      if (state.isPlaying && state.currentTime >= state.duration) {
+        state.currentTime = 0;
+      }
+      syncMediaElements(true);
+      updatePlayPauseUI();
+    }
+
+    function updatePlayPauseUI() {
+      const icon = document.getElementById('playPauseIcon');
+      icon.className = state.isPlaying ? 'fa-solid fa-pause text-sm' : 'fa-solid fa-play text-sm ml-0.5';
+    }
+
+    function seekTo(time) {
+      state.currentTime = Math.max(0, Math.min(state.duration, time));
+      syncMediaElements(true);
+      updatePlayheadPosition();
+    }
+
+    function stepFrame(dir) {
+      state.isPlaying = false;
+      updatePlayPauseUI();
+      seekTo(state.currentTime + dir * (1 / 30));
+    }
+
+    function toggleMute() {
+      state.isMuted = !state.isMuted;
+      document.getElementById('volumeIcon').className = state.isMuted ? 'fa-solid fa-volume-xmark text-red-400' : 'fa-solid fa-volume-high';
+      syncMediaElements(false);
+    }
+
+    function setMasterVolume(val) {
+      state.masterVolume = parseFloat(val);
+      state.isMuted = state.masterVolume === 0;
+      syncMediaElements(false);
+    }
+
+    function syncMediaElements(forceSeek) {
+      state.clips.forEach(clip => {
+        if ((clip.type === 'video' || clip.type === 'audio') && clip.mediaElement && typeof clip.mediaElement.play === 'function') {
+          const el = clip.mediaElement;
+          const active = state.currentTime >= clip.start && state.currentTime <= clip.start + clip.duration;
+          el.volume = state.isMuted ? 0 : Math.min(1, (clip.volume ?? 1) * state.masterVolume);
+          if (clip.pitchRate && clip.pitchRate !== 1) {
+            el.preservesPitch = false;
+            el.playbackRate = clip.pitchRate;
+          }
+          if (clip.voiceProfile) {
+            applyStudioAudioDSP(el, clip.voiceProfile);
+          }
+
+          if (active) {
+            const localTime = (state.currentTime - clip.start) * (clip.speed || clip.pitchRate || 1);
+            if (forceSeek || Math.abs(el.currentTime - localTime) > 0.25) {
+              if (isFinite(localTime)) el.currentTime = Math.min(el.duration || localTime, localTime);
+            }
+            if (state.isPlaying && el.paused) {
+              el.play().catch(() => {});
+            } else if (!state.isPlaying && !el.paused) {
+              el.pause();
+            }
+          } else {
+            if (!el.paused) el.pause();
+          }
+        }
+      });
+    }
+
+    // --- ON-CANVAS INTERACTIVE DRAGGING & WHEEL ZOOM ---
+    function setupCanvasInteractions() {
+      canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const normX = (e.clientX - rect.left) / rect.width;
+        const normY = (e.clientY - rect.top) / rect.height;
+
+        const activeOverlays = state.clips
+          .filter(c => c.track === 'overlays' && state.currentTime >= c.start && state.currentTime <= c.start + c.duration)
+          .reverse();
+
+        for (const ov of activeOverlays) {
+          if (Math.abs(normX - ov.x) < 0.22 && Math.abs(normY - ov.y) < 0.16) {
+            selectClip(ov.id);
+            draggingCanvasLayer = ov;
+            draggingCanvasMode = 'move';
+            dragOffset = { x: normX - ov.x, y: normY - ov.y };
+            return;
+          }
+        }
+
+        const activeVideo = state.clips
+          .filter(c => c.track === 'video' && state.currentTime >= c.start && state.currentTime <= c.start + c.duration)
+          .pop();
+
+        if (activeVideo) {
+          selectClip(activeVideo.id);
+          draggingCanvasLayer = activeVideo;
+          draggingCanvasMode = 'move_video';
+          dragOffset = {
+            x: e.clientX - (activeVideo.x || 0) * (rect.width / canvas.width),
+            y: e.clientY - (activeVideo.y || 0) * (rect.height / canvas.height)
+          };
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!draggingCanvasLayer) return;
+        const rect = canvas.getBoundingClientRect();
+
+        if (draggingCanvasMode === 'move') {
+          const normX = (e.clientX - rect.left) / rect.width;
+          const normY = (e.clientY - rect.top) / rect.height;
+          draggingCanvasLayer.x = Math.max(0.05, Math.min(0.95, normX - dragOffset.x));
+          draggingCanvasLayer.y = Math.max(0.05, Math.min(0.95, normY - dragOffset.y));
+        } else if (draggingCanvasMode === 'move_video') {
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          draggingCanvasLayer.x = Math.round((e.clientX - dragOffset.x) * scaleX);
+          draggingCanvasLayer.y = Math.round((e.clientY - dragOffset.y) * scaleY);
+          renderInspector();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        draggingCanvasLayer = null;
+        draggingCanvasMode = null;
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        let targetClip = state.clips.find(c => c.id === state.selectedClipId && (c.track === 'video' || c.track === 'overlays'));
+        if (!targetClip) {
+          targetClip = state.clips.find(c => c.track === 'video' && state.currentTime >= c.start && state.currentTime <= c.start + c.duration);
+        }
+        if (!targetClip) return;
+
+        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        targetClip.scale = Math.max(0.15, Math.min(3.5, (targetClip.scale || 1) + delta));
+        if (state.selectedClipId === targetClip.id) renderInspector();
+      }, { passive: false });
+    }
+
+    function toggleFullscreenPreview() {
+      const frame = document.getElementById('canvasFrame');
+      if (!document.fullscreenElement) {
+        frame.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // --- REAL-TIME 60FPS RENDER ENGINE ---
+    function mainLoop(timestamp) {
+      if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
+      const dt = (timestamp - lastFrameTimestamp) / 1000;
+      lastFrameTimestamp = timestamp;
+
+      if (state.isPlaying) {
+        state.currentTime += dt;
+        if (state.currentTime >= state.duration) {
+          if (state.isExporting) {
+            finishVideoExport();
+          } else {
+            state.currentTime = 0;
+          }
+        }
+        syncMediaElements(false);
+        updatePlayheadPosition();
+      }
+
+      renderFrame();
+      requestAnimationFrame(mainLoop);
+    }
+
+    function renderFrame() {
+      const W = canvas.width;
+      const H = canvas.height;
+      const t = state.currentTime;
+
+      offCtx.save();
+      offCtx.fillStyle = '#07090c';
+      offCtx.fillRect(0, 0, W, H);
+
+      const adj = state.adjustments;
+      const presetCss = (COLOR_FILTERS.find(f => f.id === adj.filter) || COLOR_FILTERS[0]).css;
+      const filterStr = `${presetCss !== 'none' ? presetCss : ''} brightness(${adj.brightness}%) contrast(${adj.contrast}%) saturate(${adj.saturate}%) hue-rotate(${adj.hue}deg) blur(${adj.blur}px)`.trim();
+      offCtx.filter = filterStr || 'none';
+
+      const activeVideoClips = state.clips.filter(c => c.track === 'video' && t >= c.start && t <= c.start + c.duration);
+      activeVideoClips.forEach(clip => {
+        offCtx.save();
+        offCtx.globalAlpha = clip.opacity ?? 1;
+        offCtx.translate(W / 2 + (clip.x || 0), H / 2 + (clip.y || 0));
+        offCtx.rotate(((clip.rotation || 0) * Math.PI) / 180);
+        offCtx.scale((clip.scale || 1) * (clip.flipH ? -1 : 1), (clip.scale || 1) * (clip.flipV ? -1 : 1));
+
+        if (clip.type === 'demo_scene') {
+          drawProceduralDemoScene(offCtx, W, H, t - clip.start);
+        } else if (clip.type === 'stock_video') {
+          drawStockVideoScene(offCtx, W, H, t - clip.start, clip.stockId);
+        } else if (clip.mediaElement) {
+          const el = clip.mediaElement;
+          const mediaW = el.videoWidth || el.naturalWidth || el.width || W;
+          const mediaH = el.videoHeight || el.naturalHeight || el.height || H;
+          const scaleFit = Math.min(W / mediaW, H / mediaH);
+          const drawW = mediaW * scaleFit;
+          const drawH = mediaH * scaleFit;
+          offCtx.drawImage(el, -drawW / 2, -drawH / 2, drawW, drawH);
+        }
+        offCtx.restore();
+      });
+
+      offCtx.filter = 'none';
+
+      const activeOverlays = state.clips.filter(c => c.track === 'overlays' && t >= c.start && t <= c.start + c.duration);
+      activeOverlays.forEach(ov => {
+        const localT = t - ov.start;
+        offCtx.save();
+        let animScale = 1;
+        let animAlpha = ov.opacity ?? 1;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (ov.animation === 'fade') {
+          animAlpha *= Math.min(1, localT / 0.6);
+        } else if (ov.animation === 'pulse') {
+          animScale = 1 + Math.sin(localT * 6) * 0.08;
+        } else if (ov.animation === 'bounce') {
+          const pop = localT < 0.25 ? (0.6 + (localT / 0.25) * 0.5) : 1;
+          animScale = pop;
+          offsetY = -Math.abs(Math.sin(localT * 4.5)) * 14;
+        } else if (ov.animation === 'zoom_slam') {
+          animScale = localT < 0.3 ? 2.4 - (localT / 0.3) * 1.4 : 1;
+        } else if (ov.animation === 'slide') {
+          offsetX = localT < 0.35 ? (1 - localT / 0.35) * (W * 0.35) : 0;
+        } else if (ov.animation === 'wave') {
+          offsetY = Math.sin(localT * 4) * 16;
+          offsetX = Math.cos(localT * 2.5) * 10;
+        } else if (ov.animation === 'glitch_text') {
+          if (Math.sin(localT * 38) > 0.75) {
+            offsetX = (Math.random() - 0.5) * 24;
+            offsetY = (Math.random() - 0.5) * 10;
+          }
+        }
+
+        offCtx.globalAlpha = animAlpha;
+        offCtx.translate(ov.x * W + offsetX, ov.y * H + offsetY);
+        offCtx.rotate(((ov.rotation || 0) * Math.PI) / 180);
+        offCtx.scale((ov.scale || 1) * animScale, (ov.scale || 1) * animScale);
+
+        if (ov.type === 'text') {
+          let displayTxt = ov.text;
+          if (ov.animation === 'typewriter') {
+            const chars = Math.max(1, Math.floor((localT / 1.4) * ov.text.length));
+            displayTxt = ov.text.slice(0, chars);
+          }
+          const fontSize = Math.round((ov.fontSize || 64) * (H / 1080));
+          const fontFam = ov.fontFamily || 'Cairo';
+          offCtx.font = `900 ${fontSize}px "${fontFam}", sans-serif`;
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+
+          const metrics = offCtx.measureText(displayTxt);
+          const padX = fontSize * 0.6;
+          const padY = fontSize * 0.38;
+
+          if (ov.templateStyle === 'news_bar') {
+            offCtx.fillStyle = ov.bgColor || '#dc2626';
+            offCtx.fillRect(-W, -fontSize * 0.75, W * 2, fontSize * 1.5);
+            offCtx.fillStyle = '#facc15';
+            offCtx.fillRect(-W, -fontSize * 0.75, W * 2, 6);
+          } else if (ov.bgColor && ov.bgColor !== 'rgba(0,0,0,0)') {
+            offCtx.fillStyle = ov.bgColor;
+            roundRect(offCtx, -metrics.width / 2 - padX, -fontSize / 2 - padY / 2, metrics.width + padX * 2, fontSize + padY, 20);
+            offCtx.fill();
+            if (ov.templateStyle === 'neon_box') {
+              offCtx.strokeStyle = ov.strokeColor || '#00e5ff';
+              offCtx.lineWidth = 3;
+              offCtx.stroke();
+            }
+          }
+
+          if (ov.strokeWidth && ov.strokeWidth > 0) {
+            offCtx.lineJoin = 'round';
+            offCtx.lineWidth = ov.strokeWidth * (H / 1080) * 1.5;
+            offCtx.strokeStyle = ov.strokeColor || '#000000';
+            offCtx.strokeText(displayTxt, 0, 0);
+          }
+
+          offCtx.shadowColor = ov.shadowColor || 'rgba(0,0,0,0.6)';
+          offCtx.shadowBlur = 16;
+          if (ov.gradientTo && ov.gradientTo !== ov.color) {
+            const textGrad = offCtx.createLinearGradient(0, -fontSize / 2, 0, fontSize / 2);
+            textGrad.addColorStop(0, ov.color || '#ffffff');
+            textGrad.addColorStop(1, ov.gradientTo);
+            offCtx.fillStyle = textGrad;
+          } else {
+            offCtx.fillStyle = ov.color || '#ffffff';
+          }
+          offCtx.fillText(displayTxt, 0, 0);
+        } else if (ov.type === 'sticker') {
+          const size = Math.round((ov.fontSize || 90) * (H / 1080));
+          offCtx.font = `${size}px sans-serif`;
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+          offCtx.fillText(ov.emoji, 0, 0);
+        }
+
+        offCtx.restore();
+      });
+
+      offCtx.restore();
+
+      if (!state.isExporting && state.selectedClipId) {
+        const sel = state.clips.find(c => c.id === state.selectedClipId);
+        if (sel && t >= sel.start && t <= sel.start + sel.duration) {
+          offCtx.save();
+          offCtx.strokeStyle = '#00e5ff';
+          offCtx.lineWidth = Math.max(2, Math.round(W / 450));
+          offCtx.setLineDash([10, 6]);
+          if (sel.track === 'video') {
+            const boxW = W * 0.65 * (sel.scale || 1);
+            const boxH = H * 0.65 * (sel.scale || 1);
+            offCtx.translate(W / 2 + (sel.x || 0), H / 2 + (sel.y || 0));
+            offCtx.rotate(((sel.rotation || 0) * Math.PI) / 180);
+            offCtx.strokeRect(-boxW / 2, -boxH / 2, boxW, boxH);
+          } else if (sel.track === 'overlays') {
+            const boxW = W * 0.34 * (sel.scale || 1);
+            const boxH = H * 0.14 * (sel.scale || 1);
+            offCtx.translate(sel.x * W, sel.y * H);
+            offCtx.rotate(((sel.rotation || 0) * Math.PI) / 180);
+            offCtx.strokeRect(-boxW / 2, -boxH / 2, boxW, boxH);
+          }
+          offCtx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.clearRect(0, 0, W, H);
+
+      const activeEffects = state.clips.filter(c => c.track === 'effects' && t >= c.start && t <= c.start + c.duration);
+      let shakeX = 0, shakeY = 0, pulseZoom = 1;
+
+      activeEffects.forEach(fx => {
+        const power = fx.intensity || 0.85;
+        const spd = fx.speed || 1.0;
+        if (fx.effectId === 'shake_pro') {
+          shakeX += Math.sin(t * 48 * spd) * 26 * power + (Math.random() - 0.5) * 16 * power;
+          shakeY += Math.cos(t * 43 * spd) * 26 * power + (Math.random() - 0.5) * 16 * power;
+        } else if (fx.effectId === 'velocity_pump') {
+          const beat = (t * 2.4 * spd) % 1;
+          pulseZoom += Math.pow(1 - beat, 2.5) * 0.24 * power;
+        }
+      });
+
+      ctx.translate(W / 2 + shakeX, H / 2 + shakeY);
+      ctx.scale(pulseZoom, pulseZoom);
+      ctx.drawImage(offscreenCanvas, -W / 2, -H / 2, W, H);
+      ctx.restore();
+
+      activeEffects.forEach(fx => {
+        const power = fx.intensity || 0.85;
+        const spd = fx.speed || 1.0;
+        const fxTime = t * spd;
+
+        if (fx.effectId === 'chromatic_split') {
+          const shift = Math.sin(fxTime * 14) * 26 * power;
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = 0.65 * power;
+          ctx.drawImage(offscreenCanvas, shift, -3, W, H);
+          ctx.drawImage(offscreenCanvas, -shift, 3, W, H);
+          ctx.restore();
+        } else if (fx.effectId === 'velocity_pump') {
+          const beat = (fxTime * 2.4) % 1;
+          const flash = Math.pow(1 - beat, 4) * 0.45 * power;
+          ctx.fillStyle = `rgba(255, 255, 255, ${flash})`;
+          ctx.fillRect(0, 0, W, H);
+        } else if (fx.effectId === 'hologram_3d') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.fillStyle = `rgba(0, 229, 255, ${0.22 * power})`;
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = `rgba(0, 255, 255, ${0.28 * power})`;
+          for (let y = (fxTime * 80) % 8; y < H; y += 8) {
+            ctx.fillRect(0, y, W, 2);
+          }
+          const beamY = ((fxTime * 280) % H);
+          const beamGrad = ctx.createLinearGradient(0, beamY - 40, 0, beamY + 40);
+          beamGrad.addColorStop(0, 'rgba(0,229,255,0)');
+          beamGrad.addColorStop(0.5, `rgba(0,229,255,${0.55 * power})`);
+          beamGrad.addColorStop(1, 'rgba(0,229,255,0)');
+          ctx.fillStyle = beamGrad;
+          ctx.fillRect(0, beamY - 40, W, 80);
+          ctx.restore();
+        } else if (fx.effectId === 'thermal_vision') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'color';
+          const thermGrad = ctx.createLinearGradient(0, 0, W, H);
+          thermGrad.addColorStop(0, '#0011ff');
+          thermGrad.addColorStop(0.35, '#00ff66');
+          thermGrad.addColorStop(0.7, '#ffee00');
+          thermGrad.addColorStop(1, '#ff0033');
+          ctx.globalAlpha = power;
+          ctx.fillStyle = thermGrad;
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+        } else if (fx.effectId === 'night_vision') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'multiply';
+          ctx.fillStyle = `rgba(30, 255, 80, ${0.85 * power})`;
+          ctx.fillRect(0, 0, W, H);
+          ctx.globalCompositeOperation = 'screen';
+          ctx.fillStyle = `rgba(0, 255, 70, ${0.15 * power})`;
+          for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1);
+          ctx.restore();
+        } else if (fx.effectId === 'liquid_wave') {
+          const strips = 36;
+          const stripH = H / strips;
+          for (let i = 0; i < strips; i++) {
+            const waveX = Math.sin(fxTime * 7 + i * 0.45) * 28 * power;
+            ctx.drawImage(offscreenCanvas, 0, i * stripH, W, stripH, waveX, i * stripH, W, stripH);
+          }
+        } else if (fx.effectId === 'anamorphic_flare') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          const flareY = H * (0.35 + Math.sin(fxTime * 1.8) * 0.12);
+          const flareGrad = ctx.createLinearGradient(0, flareY, W, flareY);
+          flareGrad.addColorStop(0, 'rgba(0, 180, 255, 0)');
+          flareGrad.addColorStop(0.5, `rgba(120, 230, 255, ${0.85 * power})`);
+          flareGrad.addColorStop(1, 'rgba(0, 180, 255, 0)');
+          ctx.fillStyle = flareGrad;
+          ctx.fillRect(0, flareY - 8 * power, W, 16 * power);
+          ctx.restore();
+        } else if (fx.effectId === 'film_grain_35mm') {
+          ctx.save();
+          ctx.fillStyle = `rgba(255, 240, 210, ${0.08 * power})`;
+          for (let i = 0; i < 120; i++) {
+            ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+          }
+          if (Math.random() > 0.65) {
+            ctx.strokeStyle = `rgba(255,255,255,${0.25 * power})`;
+            ctx.lineWidth = 1.5;
+            const sx = Math.random() * W;
+            ctx.beginPath();
+            ctx.moveTo(sx, 0);
+            ctx.lineTo(sx + (Math.random() - 0.5) * 15, H);
+            ctx.stroke();
+          }
+          ctx.restore();
+        } else if (fx.effectId === 'cinema_bars') {
+          const barH = H * 0.12 * power;
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, W, barH);
+          ctx.fillRect(0, H - barH, W, barH);
+        } else if (fx.effectId === 'halation_glow' || fx.effectId === 'dreamy_bloom') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.filter = `blur(${18 * power}px) saturate(180%)`;
+          ctx.globalAlpha = 0.52 * power;
+          ctx.drawImage(offscreenCanvas, 0, 0, W, H);
+          ctx.restore();
+        } else if (fx.effectId === 'vignette_pro') {
+          const grad = ctx.createRadialGradient(W / 2, H / 2, W * 0.24, W / 2, H / 2, W * 0.68);
+          grad.addColorStop(0, 'rgba(0,0,0,0)');
+          grad.addColorStop(1, `rgba(0,0,0,${0.82 * power})`);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, W, H);
+        } else if (fx.effectId === 'glitch_blocks') {
+          const shift = Math.sin(fxTime * 45) * 24 * power;
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = 0.65 * power;
+          ctx.drawImage(offscreenCanvas, shift, -4, W, H);
+          ctx.drawImage(offscreenCanvas, -shift, 4, W, H);
+          for (let b = 0; b < 4; b++) {
+            if (Math.random() > 0.45) {
+              const sliceY = Math.random() * H;
+              const sliceH = 14 + Math.random() * 48;
+              ctx.drawImage(offscreenCanvas, 0, sliceY, W, sliceH, (Math.random() - 0.5) * 75 * power, sliceY, W, sliceH);
+            }
+          }
+          ctx.restore();
+        } else if (fx.effectId === 'vhs_tracking') {
+          ctx.save();
+          ctx.fillStyle = `rgba(0, 229, 255, ${0.06 * power})`;
+          for (let y = 0; y < H; y += 6) ctx.fillRect(0, y, W, 2);
+          const scanBarY = ((fxTime * 240) % H);
+          ctx.fillStyle = `rgba(255, 255, 255, ${0.16 * power})`;
+          ctx.fillRect(0, scanBarY, W, 22);
+          ctx.restore();
+        } else if (fx.effectId === 'crt_monitor') {
+          ctx.save();
+          ctx.fillStyle = `rgba(0, 0, 0, ${0.35 * power})`;
+          for (let y = 0; y < H; y += 5) ctx.fillRect(0, y, W, 2);
+          for (let x = 0; x < W; x += 5) ctx.fillRect(x, 0, 1, H);
+          ctx.restore();
+        } else if (fx.effectId === 'pixelate_8bit') {
+          const blockSize = Math.max(4, Math.round(22 * power));
+          const smallW = Math.max(16, Math.floor(W / blockSize));
+          const smallH = Math.max(16, Math.floor(H / blockSize));
+          fxBufferCtx.clearRect(0, 0, W, H);
+          fxBufferCtx.drawImage(offscreenCanvas, 0, 0, smallW, smallH);
+          ctx.save();
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(fxBufferCanvas, 0, 0, smallW, smallH, 0, 0, W, H);
+          ctx.restore();
+        } else if (fx.effectId === 'mirror_split') {
+          ctx.save();
+          ctx.translate(W, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(offscreenCanvas, 0, 0, W / 2, H, 0, 0, W / 2, H);
+          ctx.restore();
+        } else if (fx.effectId === 'golden_bokeh' || fx.effectId === 'fire_embers' || fx.effectId === 'snowfall' || fx.effectId === 'confetti_party') {
+          ctx.save();
+          state.particles.forEach((p, idx) => {
+            const dir = fx.effectId === 'fire_embers' ? -1 : 1;
+            const py = ((p.y + dir * fxTime * p.speed + 10) % 1) * H;
+            const px = ((p.x + Math.sin(fxTime * 2 + p.phase) * 0.04 + 1) % 1) * W;
+            ctx.beginPath();
+            if (fx.effectId === 'golden_bokeh') {
+              ctx.fillStyle = `rgba(255, 215, 70, ${0.55 * power})`;
+              ctx.arc(px, py, p.r * 3.2, 0, Math.PI * 2);
+            } else if (fx.effectId === 'fire_embers') {
+              ctx.fillStyle = `rgba(255, ${100 + (idx % 120)}, 20, ${0.85 * power})`;
+              ctx.arc(px, py, p.r * 1.4, 0, Math.PI * 2);
+            } else if (fx.effectId === 'snowfall') {
+              ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * power})`;
+              ctx.arc(px, py, p.r * 1.6, 0, Math.PI * 2);
+            } else {
+              ctx.fillStyle = `hsla(${p.hue}, 90%, 60%, ${0.85 * power})`;
+              ctx.fillRect(px, py, p.r * 2.5, p.r * 1.5);
+            }
+            ctx.fill();
+          });
+          ctx.restore();
+        } else if (fx.effectId === 'raindrops') {
+          ctx.save();
+          ctx.strokeStyle = `rgba(180, 220, 255, ${0.45 * power})`;
+          ctx.lineWidth = 2;
+          state.particles.forEach(p => {
+            const py = ((p.y + fxTime * p.speed * 4.5) % 1) * H;
+            const px = ((p.x - fxTime * 0.25 + 10) % 1) * W;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px - 10, py + 28);
+            ctx.stroke();
+          });
+          ctx.restore();
+        } else if (fx.effectId === 'light_leaks') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          const leakX = W * (0.15 + Math.sin(fxTime * 1.2) * 0.15);
+          const leakGrad = ctx.createRadialGradient(leakX, H * 0.3, 10, leakX, H * 0.3, W * 0.65);
+          leakGrad.addColorStop(0, `rgba(255, 140, 40, ${0.75 * power})`);
+          leakGrad.addColorStop(0.5, `rgba(255, 40, 110, ${0.35 * power})`);
+          leakGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = leakGrad;
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+        }
+      });
+    }
+
+    // Procedural Cyberpunk/Neon Animated Scene
+    function drawProceduralDemoScene(c, W, H, t) {
+      const grad = c.createLinearGradient(-W / 2, -H / 2, W / 2, H / 2);
+      grad.addColorStop(0, '#0f172a');
+      grad.addColorStop(0.5, '#1e1b4b');
+      grad.addColorStop(1, '#090d16');
+      c.fillStyle = grad;
+      c.fillRect(-W / 2, -H / 2, W, H);
+
+      for (let i = 1; i <= 5; i++) {
+        const radius = ((t * 140 + i * 95) % (Math.max(W, H) * 0.65));
+        c.beginPath();
+        c.arc(0, -H * 0.06, radius, 0, Math.PI * 2);
+        c.strokeStyle = i % 2 === 0 ? 'rgba(0, 229, 255, 0.45)' : 'rgba(157, 78, 221, 0.45)';
+        c.lineWidth = 4;
+        c.stroke();
+      }
+
+      c.strokeStyle = 'rgba(0, 229, 255, 0.25)';
+      c.lineWidth = 2;
+      const horizonY = H * 0.08;
+      for (let x = -W; x <= W; x += 120) {
+        c.beginPath();
+        c.moveTo(x * 0.2, horizonY);
+        c.lineTo(x * 1.6, H / 2);
+        c.stroke();
+      }
+      for (let y = 0; y < 8; y++) {
+        const gy = horizonY + Math.pow(((y + (t * 2) % 1) / 8), 1.8) * (H / 2 - horizonY);
+        c.beginPath();
+        c.moveTo(-W / 2, gy);
+        c.lineTo(W / 2, gy);
+        c.stroke();
+      }
+
+      c.save();
+      c.translate(0, -H * 0.08 + Math.sin(t * 3) * 14);
+      c.fillStyle = '#00e5ff';
+      c.shadowColor = '#00e5ff';
+      c.shadowBlur = 25;
+      c.font = `900 ${Math.round(H * 0.085)}px Inter, sans-serif`;
+      c.textAlign = 'center';
+      c.fillText('KAB CUT STUDIO', 0, 0);
+      c.restore();
+    }
+
+    // Procedural Stock Videos Renderer
+    function drawStockVideoScene(c, W, H, t, stockId) {
+      if (stockId === 'stock_vid_cyber') {
+        drawProceduralDemoScene(c, W, H, t);
+      } else if (stockId === 'stock_vid_sunset') {
+        const sky = c.createLinearGradient(0, -H / 2, 0, H / 2);
+        sky.addColorStop(0, '#1e1b4b');
+        sky.addColorStop(0.45, '#e11d48');
+        sky.addColorStop(0.75, '#f59e0b');
+        sky.addColorStop(1, '#0f172a');
+        c.fillStyle = sky;
+        c.fillRect(-W / 2, -H / 2, W, H);
+
+        const sunY = Math.sin(t * 0.5) * 35;
+        c.fillStyle = '#fde047';
+        c.shadowColor = '#f59e0b';
+        c.shadowBlur = 50;
+        c.beginPath();
+        c.arc(0, sunY, H * 0.16, 0, Math.PI * 2);
+        c.fill();
+        c.shadowBlur = 0;
+
+        c.fillStyle = '#090d16';
+        c.fillRect(-W / 2, H * 0.12, W, H * 0.4);
+        c.strokeStyle = 'rgba(253, 224, 71, 0.5)';
+        c.lineWidth = 3;
+        for (let i = 0; i < 14; i++) {
+          const wy = H * 0.15 + i * 24;
+          const ww = (180 - i * 8) + Math.sin(t * 4 + i) * 30;
+          c.beginPath();
+          c.moveTo(-ww, wy);
+          c.lineTo(ww, wy);
+          c.stroke();
+        }
+      } else if (stockId === 'stock_vid_matrix') {
+        c.fillStyle = '#020617';
+        c.fillRect(-W / 2, -H / 2, W, H);
+        c.fillStyle = '#10b981';
+        c.font = `bold ${Math.round(H * 0.032)}px monospace`;
+        const cols = 28;
+        for (let i = 0; i < cols; i++) {
+          const x = -W / 2 + (i + 0.5) * (W / cols);
+          for (let j = 0; j < 14; j++) {
+            const y = ((-H / 2 + ((t * 220 + i * 73 + j * 85) % H)));
+            c.globalAlpha = 1 - (j / 14);
+            c.fillText((i + j) % 2 === 0 ? '1' : '0', x, y);
+          }
+        }
+        c.globalAlpha = 1;
+      } else if (stockId === 'stock_vid_galaxy') {
+        c.fillStyle = '#050314';
+        c.fillRect(-W / 2, -H / 2, W, H);
+        const neb = c.createRadialGradient(0, 0, 20, 0, 0, W * 0.5);
+        neb.addColorStop(0, 'rgba(168, 85, 247, 0.45)');
+        neb.addColorStop(0.5, 'rgba(59, 130, 246, 0.2)');
+        neb.addColorStop(1, 'transparent');
+        c.fillStyle = neb;
+        c.fillRect(-W / 2, -H / 2, W, H);
+
+        for (let i = 0; i < 85; i++) {
+          const angle = i * 0.7 + t * 0.25;
+          const dist = ((i * 19 + t * 40) % (W * 0.55));
+          const sx = Math.cos(angle) * dist;
+          const sy = Math.sin(angle) * dist * 0.65;
+          c.fillStyle = i % 3 === 0 ? '#38bdf8' : '#ffffff';
+          c.beginPath();
+          c.arc(sx, sy, (i % 3) + 1.5, 0, Math.PI * 2);
+          c.fill();
+        }
+      } else if (stockId === 'stock_vid_waves') {
+        c.fillStyle = '#0f0720';
+        c.fillRect(-W / 2, -H / 2, W, H);
+        const bars = 42;
+        const barW = (W * 0.8) / bars;
+        for (let i = 0; i < bars; i++) {
+          const val = Math.abs(Math.sin(t * 5 + i * 0.35) * Math.cos(t * 2.5 - i * 0.2));
+          const bh = 30 + val * H * 0.45;
+          const bx = -W * 0.4 + i * barW;
+          const g = c.createLinearGradient(0, -bh / 2, 0, bh / 2);
+          g.addColorStop(0, '#00e5ff');
+          g.addColorStop(0.5, '#ff2a85');
+          g.addColorStop(1, '#9d4edd');
+          c.fillStyle = g;
+          c.fillRect(bx, -bh / 2, barW * 0.65, bh);
+        }
+      } else if (stockId === 'stock_vid_luxury') {
+        const bg = c.createRadialGradient(0, 0, 40, 0, 0, W * 0.65);
+        bg.addColorStop(0, '#451a03');
+        bg.addColorStop(1, '#090705');
+        c.fillStyle = bg;
+        c.fillRect(-W / 2, -H / 2, W, H);
+        for (let i = 0; i < 55; i++) {
+          const px = Math.sin(t * 0.9 + i * 1.3) * (W * 0.44);
+          const py = (((i * 37 - t * 90) % H + H) % H) - H / 2;
+          c.fillStyle = 'rgba(253, 224, 71, 0.75)';
+          c.beginPath();
+          c.arc(px, py, 2 + (i % 5) * 1.5, 0, Math.PI * 2);
+          c.fill();
+        }
+      }
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function formatTimecode(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      const f = Math.floor((sec % 1) * 30);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
+    }
+
+    // --- REAL VIDEO EXPORT USING MEDIARECORDER ---
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    function openExportModal() {
+      state.isPlaying = false;
+      updatePlayPauseUI();
+      document.getElementById('exportResSummary').textContent = `${canvas.width} × ${canvas.height} (60fps)`;
+      document.getElementById('exportDurSummary').textContent = formatTimecode(state.duration);
+      document.getElementById('exportSettingsView').classList.remove('hidden');
+      document.getElementById('exportProgressView').classList.add('hidden');
+      document.getElementById('exportModal').classList.remove('hidden');
+      document.getElementById('exportModal').classList.add('flex');
+    }
+
+    function closeExportModal() {
+      if (state.isExporting) return;
+      document.getElementById('exportModal').classList.add('hidden');
+      document.getElementById('exportModal').classList.remove('flex');
+    }
+
+    function startVideoExport() {
+      try {
+        const bitrate = parseInt(document.getElementById('exportBitrateSelect').value, 10);
+        const stream = canvas.captureStream(60);
+        recordedChunks = [];
+
+        const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+        const chosenMime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || '';
+
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: chosenMime,
+          videoBitsPerSecond: bitrate
+        });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: chosenMime || 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const title = (document.getElementById('projectTitleInput').value || 'KAB_CUT_Export').trim();
+          a.href = url;
+          a.download = `${title}.webm`;
+          a.click();
+
+          state.isExporting = false;
+          state.isPlaying = false;
+          updatePlayPauseUI();
+          closeExportModal();
+          showToast('تم تصدير وتنزيل الفيديو بنجاح!');
+        };
+
+        document.getElementById('exportSettingsView').classList.add('hidden');
+        document.getElementById('exportProgressView').classList.remove('hidden');
+
+        state.isExporting = true;
+        state.currentTime = 0;
+        syncMediaElements(true);
+        mediaRecorder.start();
+        state.isPlaying = true;
+        updatePlayPauseUI();
+
+        const progInterval = setInterval(() => {
+          if (!state.isExporting) {
+            clearInterval(progInterval);
+            return;
+          }
+          const pct = Math.min(100, Math.round((state.currentTime / state.duration) * 100));
+          document.getElementById('exportProgressBar').style.width = `${pct}%`;
+          document.getElementById('exportPercentText').textContent = `${pct}%`;
+        }, 100);
+      } catch (err) {
+        state.isExporting = false;
+        showToast('تعذر بدء التصدير في هذا المتصفح');
+      }
+    }
+
+    function finishVideoExport() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    }
+
+    // --- VOICEOVER RECORDER, TONE CHANGER & TREND SFX ENGINE ---
+    let voiceMediaRecorder = null;
+    let voiceChunks = [];
+    let recInterval = null;
+
+    async function toggleVoiceRecording() {
+      if (state.isRecordingVoice) {
+        if (voiceMediaRecorder && voiceMediaRecorder.state !== 'inactive') {
+          voiceMediaRecorder.stop();
+        }
+        state.isRecordingVoice = false;
+        clearInterval(recInterval);
+        switchTab('audio');
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        voiceChunks = [];
+        voiceMediaRecorder = new MediaRecorder(stream);
+
+        voiceMediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) voiceChunks.push(e.data);
+        };
+
+        voiceMediaRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          const aud = new Audio(url);
+          const dur = Math.max(2, state.recSeconds || 4);
+          const item = {
+            id: 'rec_' + Date.now(),
+            type: 'audio',
+            name: `تسجيل صوتي (${dur}s)`,
+            url,
+            element: aud,
+            duration: dur
+          };
+          state.mediaPool.push(item);
+          addAudioClipToTimeline(item);
+          const defaultPro = GLOBAL_50_VOICES.find(v => v.id === state.selectedVoiceId) || GLOBAL_50_VOICES[0];
+          applyVoiceProfileToClip(defaultPro.id);
+          showToast(`تم حفظ التسجيل وتحسينه تلقائياً بتون "${defaultPro.name.split('(')[0].trim()}"!`);
+        };
+
+        voiceMediaRecorder.start();
+        state.isRecordingVoice = true;
+        state.recSeconds = 0;
+        switchTab('audio');
+
+        recInterval = setInterval(() => {
+          state.recSeconds++;
+          const badge = document.getElementById('recTimerBadge');
+          if (badge) badge.textContent = `جاري التسجيل... ${state.recSeconds}s`;
+        }, 1000);
+      } catch (err) {
+        showToast('يرجى السماح بالوصول إلى الميكروفون للتسجيل');
+      }
+    }
+
+    function applyVoiceTonePreset(preset) {
+      let clip = state.clips.find(c => c.id === state.selectedClipId && (c.type === 'audio' || c.type === 'video'));
+      if (!clip) {
+        clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
+      }
+      if (!clip) return showToast('سجّل صوتاً أو أضف مقطعاً صوتياً أولاً لتغيير التون');
+
+      selectClip(clip.id);
+      if (preset === 'luxury_deep') {
+        updateClipPitch(0.82);
+        showToast('تم تحويل التون إلى صوت فخم رخيم عميق');
+      } else if (preset === 'female_soft') {
+        updateClipPitch(1.24);
+        showToast('تم تحويل التون إلى نبرة أنثوية ناعمة');
+      } else if (preset === 'studio_echo') {
+        updateClipPitch(0.92);
+        clip.volume = 1.0;
+        showToast('تم تطبيق تون استوديو فخم');
+      } else {
+        updateClipPitch(1.0);
+        showToast('تمت إعادة الصوت للتون الطبيعي');
+      }
+    }
+
+    function addTrendSfx(sfxId) {
+      const def = TREND_SFX_LIST.find(s => s.id === sfxId);
+      if (!def) return;
+
+      const sampleRate = 22050;
+      const numSamples = Math.floor(sampleRate * def.dur);
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+
+      const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        const p = t / def.dur;
+        let sample = 0;
+
+        if (sfxId === 'cinema_boom') {
+          const freq = 95 * Math.exp(-p * 3.2) + 28;
+          sample = Math.sin(2 * Math.PI * freq * t) * Math.exp(-p * 2.4) * 0.95;
+        } else if (sfxId === 'whoosh_swipe') {
+          const env = Math.sin(Math.PI * p);
+          const sweep = Math.sin(2 * Math.PI * (200 + env * 700) * t);
+          sample = ((Math.random() * 2 - 1) * 0.65 + sweep * 0.35) * env * 0.8;
+        } else if (sfxId === 'trend_pop') {
+          const freq = 350 + p * 950;
+          sample = Math.sin(2 * Math.PI * freq * t) * Math.exp(-p * 8) * 0.85;
+        } else if (sfxId === 'riser_tension') {
+          const freq = 110 + Math.pow(p, 2) * 1400;
+          sample = Math.sin(2 * Math.PI * freq * t) * p * 0.75;
+        } else if (sfxId === 'cyber_laser') {
+          const freq = 1800 * Math.exp(-p * 6) + 140;
+          sample = Math.sin(2 * Math.PI * freq * t) * Math.exp(-p * 4) * 0.8;
+        } else if (sfxId === 'cash_ding') {
+          const bell1 = Math.sin(2 * Math.PI * 1318.5 * t);
+          const bell2 = Math.sin(2 * Math.PI * 2637 * t) * 0.5;
+          sample = (bell1 + bell2) * Math.exp(-p * 5) * 0.7;
+        }
+
+        sample = Math.max(-1, Math.min(1, sample));
+        view.setInt16(44 + i * 2, sample * 32767, true);
+      }
+
+      const blob = new Blob([buffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const aud = new Audio(url);
+      const item = {
+        id: 'sfx_' + Date.now(),
+        type: 'audio',
+        name: `مؤثر: ${def.name}`,
+        url,
+        element: aud,
+        duration: def.dur
+      };
+      state.mediaPool.push(item);
+
+      saveHistory();
+      const newClip = {
+        id: 'clip_' + Date.now(),
+        track: 'audio',
+        type: 'audio',
+        mediaId: item.id,
+        mediaElement: aud,
+        name: item.name,
+        start: state.currentTime,
+        duration: def.dur,
+        volume: 0.95
+      };
+      state.clips.push(newClip);
+      recalcTotalDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+      aud.play().catch(() => {});
+      showToast(`تمت إضافة "${def.name}" عند المؤشر`);
+    }
+
+    // --- GEMINI AI LUXURY EGYPTIAN & KHALEEJI VOICE GENERATOR (TTS) ---
+    function pcmToWavBlob(pcm16, sampleRate) {
+      const numSamples = pcm16.length;
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+      const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      for (let i = 0; i < numSamples; i++) {
+        view.setInt16(44 + i * 2, pcm16[i], true);
+      }
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    async function generateAiDialectVoice() {
+      const textEl = document.getElementById('aiTtsTextInput');
+      const rawText = (textEl ? textEl.value : '').trim();
+      if (!rawText) return showToast('اكتب النص المطلوب نطقه أولاً');
+
+      const persona = GLOBAL_50_VOICES.find(p => p.id === state.selectedVoiceId) || GLOBAL_50_VOICES[0];
+
+      const btn = document.getElementById('generateAiVoiceBtn');
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري توليد صوت (${persona.name.split('(')[0].trim()})...</span>`;
+
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{
+            parts: [{ text: persona.promptPrefix + rawText }]
+          }],
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: persona.voiceName }
+              }
+            }
+          }
+        };
+
+        let response = null;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (response.ok) break;
+          await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+        }
+
+        const result = await response.json();
+        const part = result?.candidates?.[0]?.content?.parts?.[0];
+        const audioData = part?.inlineData?.data;
+        const mimeType = part?.inlineData?.mimeType || 'audio/L16;rate=24000';
+
+        if (!audioData) throw new Error('No audio returned');
+
+        const rateMatch = mimeType.match(/rate=(\d+)/);
+        const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+        const binaryString = atob(audioData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+        const pcm16 = new Int16Array(bytes.buffer);
+        const wavBlob = pcmToWavBlob(pcm16, sampleRate);
+        const url = URL.createObjectURL(wavBlob);
+
+        const aud = new Audio(url);
+        aud.onloadedmetadata = () => {
+          const dur = Math.max(2, aud.duration || 4);
+          const shortTitle = persona.name.split('(')[0].trim();
+          const item = {
+            id: 'aivoice_' + Date.now(),
+            type: 'audio',
+            name: `${shortTitle}: ${rawText.slice(0, 14)}`,
+            url,
+            element: aud,
+            duration: dur
+          };
+          state.mediaPool.push(item);
+
+          saveHistory();
+          const newClip = {
+            id: 'clip_' + Date.now(),
+            track: 'audio',
+            type: 'audio',
+            mediaId: item.id,
+            mediaElement: aud,
+            name: item.name,
+            start: state.currentTime,
+            duration: dur,
+            volume: 1.0,
+            voiceProfile: persona
+          };
+          state.clips.push(newClip);
+          recalcTotalDuration();
+          selectClip(newClip.id);
+          renderTimeline();
+          applyStudioAudioDSP(aud, persona);
+          aud.play().catch(() => {});
+          showToast(`تم توليد صوت "${shortTitle}" وإضافته للخط الزمني!`);
+        };
+      } catch (err) {
+        showToast('تعذر الاتصال بخدمة التوليد الصوتي حالياً، جرب مرة أخرى');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
+  </script>
+</body>
+</html>
