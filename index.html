@@ -3474,95 +3474,119 @@
       const textEl = document.getElementById('aiTtsTextInput');
       const rawText = (textEl ? textEl.value : '').trim();
       if (!rawText) return showToast('اكتب النص المطلوب نطقه أولاً');
+      if (rawText.length > 6000) return showToast('النص طويل جداً؛ الحد الأقصى 6000 حرف');
 
       const persona = GLOBAL_50_VOICES.find(p => p.id === state.selectedVoiceId) || GLOBAL_50_VOICES[0];
-
       const btn = document.getElementById('generateAiVoiceBtn');
+      if (!btn || btn.disabled) return;
+
       const origHtml = btn.innerHTML;
+      let audioUrl = null;
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري توليد صوت (${persona.name.split('(')[0].trim()})...</span>`;
 
       try {
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-        const payload = {
-          contents: [{
-            parts: [{ text: persona.promptPrefix + rawText }]
-          }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: persona.voiceName }
-              }
-            }
-          }
-        };
+        const response = await fetch('/api/generate-voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            text: rawText,
+            voiceName: persona.voiceName,
+            style: persona.promptPrefix
+          })
+        });
 
-        let response = null;
-        for (let attempt = 0; attempt < 4; attempt++) {
-          response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (response.ok) break;
-          await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || `فشل توليد الصوت (HTTP ${response.status})`);
+        }
+        if (!result.audioBase64) throw new Error('لم يصل ملف صوتي من الخدمة');
+
+        const binary = atob(result.audioBase64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+        const mimeType = (result.mimeType || 'audio/L16;rate=24000').toLowerCase();
+        let audioBlob;
+        const hasWavHeader = bytes.length >= 12 &&
+          bytes[0] === 82 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 70 &&
+          bytes[8] === 87 && bytes[9] === 65 && bytes[10] === 86 && bytes[11] === 69;
+
+        if (mimeType.includes('wav') || hasWavHeader) {
+          audioBlob = new Blob([bytes], { type: 'audio/wav' });
+        } else {
+          if (bytes.length < 2 || bytes.length % 2 !== 0) {
+            throw new Error('صيغة بيانات الصوت غير سليمة');
+          }
+          const sampleRateMatch = mimeType.match(/rate=(\\d+)/);
+          const sampleRate = sampleRateMatch ? Number(sampleRateMatch[1]) : 24000;
+          if (!Number.isFinite(sampleRate) || sampleRate < 8000 || sampleRate > 96000) {
+            throw new Error('معدل عينات الصوت غير صالح');
+          }
+          const pcmBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+          const pcm16 = new Int16Array(pcmBuffer);
+          audioBlob = pcmToWavBlob(pcm16, sampleRate);
         }
 
-        const result = await response.json();
-        const part = result?.candidates?.[0]?.content?.parts?.[0];
-        const audioData = part?.inlineData?.data;
-        const mimeType = part?.inlineData?.mimeType || 'audio/L16;rate=24000';
+        audioUrl = URL.createObjectURL(audioBlob);
+        const aud = new Audio();
+        aud.preload = 'metadata';
+        aud.src = audioUrl;
 
-        if (!audioData) throw new Error('No audio returned');
+        await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => reject(new Error('انتهت مهلة تحميل ملف الصوت')), 15000);
+          aud.addEventListener('loadedmetadata', () => {
+            clearTimeout(timeoutId);
+            if (!Number.isFinite(aud.duration) || aud.duration <= 0) {
+              reject(new Error('مدة ملف الصوت غير صالحة'));
+            } else {
+              resolve();
+            }
+          }, { once: true });
+          aud.addEventListener('error', () => {
+            clearTimeout(timeoutId);
+            reject(new Error('تعذر قراءة ملف الصوت الناتج'));
+          }, { once: true });
+          aud.load();
+        });
 
-        const rateMatch = mimeType.match(/rate=(\d+)/);
-        const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
-        const binaryString = atob(audioData);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-        const pcm16 = new Int16Array(bytes.buffer);
-        const wavBlob = pcmToWavBlob(pcm16, sampleRate);
-        const url = URL.createObjectURL(wavBlob);
-
-        const aud = new Audio(url);
-        aud.onloadedmetadata = () => {
-          const dur = Math.max(2, aud.duration || 4);
-          const shortTitle = persona.name.split('(')[0].trim();
-          const item = {
-            id: 'aivoice_' + Date.now(),
-            type: 'audio',
-            name: `${shortTitle}: ${rawText.slice(0, 14)}`,
-            url,
-            element: aud,
-            duration: dur
-          };
-          state.mediaPool.push(item);
-
-          saveHistory();
-          const newClip = {
-            id: 'clip_' + Date.now(),
-            track: 'audio',
-            type: 'audio',
-            mediaId: item.id,
-            mediaElement: aud,
-            name: item.name,
-            start: state.currentTime,
-            duration: dur,
-            volume: 1.0,
-            voiceProfile: persona
-          };
-          state.clips.push(newClip);
-          recalcTotalDuration();
-          selectClip(newClip.id);
-          renderTimeline();
-          applyStudioAudioDSP(aud, persona);
-          aud.play().catch(() => {});
-          showToast(`تم توليد صوت "${shortTitle}" وإضافته للخط الزمني!`);
+        const dur = Math.max(0.1, aud.duration);
+        const shortTitle = persona.name.split('(')[0].trim();
+        const item = {
+          id: 'aivoice_' + Date.now(),
+          type: 'audio',
+          name: `${shortTitle}: ${rawText.slice(0, 24)}`,
+          url: audioUrl,
+          element: aud,
+          duration: dur
         };
+
+        state.mediaPool.push(item);
+        saveHistory();
+
+        const newClip = {
+          id: 'clip_' + Date.now(),
+          track: 'audio',
+          type: 'audio',
+          mediaId: item.id,
+          mediaElement: aud,
+          name: item.name,
+          start: state.currentTime,
+          duration: dur,
+          volume: 1.0,
+          voiceProfile: persona
+        };
+        state.clips.push(newClip);
+        recalcTotalDuration();
+        selectClip(newClip.id);
+        renderTimeline();
+        applyStudioAudioDSP(aud, persona);
+        aud.play().catch(() => {});
+        showToast(`تم توليد صوت "${shortTitle}" وإضافته للخط الزمني بنجاح!`);
       } catch (err) {
-        showToast('تعذر الاتصال بخدمة التوليد الصوتي حالياً، جرب مرة أخرى');
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
+        console.error('KAB CUT TTS error:', err);
+        showToast(err.message || 'تعذر توليد الصوت. تحقق من إعدادات خدمة الصوت ثم أعد المحاولة.');
       } finally {
         btn.disabled = false;
         btn.innerHTML = origHtml;
