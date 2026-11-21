@@ -86,6 +86,7 @@
       const access=await api("access");
       currentRole=access.role;
       unlock();
+      addDriveButton();
       if(currentRole==="owner") {
         addAdminButton();
       } else {
@@ -104,6 +105,42 @@
     b.style.cssText="position:fixed;top:62px;right:12px;z-index:99990;background:#172b36;color:#67e8f9;border:1px solid #087e91;border-radius:10px;padding:8px 12px;font:700 12px Cairo;cursor:pointer";
     b.onclick=async()=>{root.classList.remove("kab-auth-hidden");document.body.classList.add("kab-auth-locked");show("kabAdminView");await loadUsers();};
     document.body.appendChild(b);
+  }
+  async function driveRequest(action) {
+    const user=auth.currentUser;
+    if(!user) throw new Error("سجّل الدخول أولاً.");
+    const token=await user.getIdToken(true);
+    const response=await fetch("/api/drive/projects",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({action})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.error||"تعذر الاتصال بـ Google Drive.");
+    return data;
+  }
+  async function addDriveButton(){
+    let b=document.getElementById("kabDriveConnect");
+    if(!b){
+      b=document.createElement("button");b.id="kabDriveConnect";b.type="button";
+      b.innerHTML='<i class="fa-brands fa-google-drive"></i> مساحة Google Drive الخاصة بي';
+      b.style.cssText="position:fixed;top:108px;right:12px;z-index:99990;background:#172b36;color:#a7f3d0;border:1px solid #16865d;border-radius:10px;padding:8px 12px;font:700 12px Cairo;cursor:pointer";
+      b.onclick=async()=>{
+        b.disabled=true;b.textContent="جاري فتح Google Drive…";
+        try{
+          const user=auth.currentUser, token=await user.getIdToken(true);
+          const response=await fetch("/api/drive/connect",{headers:{"Authorization":"Bearer "+token}});
+          const data=await response.json().catch(()=>({}));
+          if(!response.ok)throw new Error(data.error||"تعذر بدء ربط Google Drive.");
+          window.location.href=data.authUrl;
+        }catch(e){alert(e.message||"تعذر ربط Google Drive.");b.disabled=false;b.innerHTML='<i class="fa-brands fa-google-drive"></i> مساحة Google Drive الخاصة بي';}
+      };
+      document.body.appendChild(b);
+    }
+    try{
+      const status=await driveRequest("status");
+      b.innerHTML='<i class="fa-brands fa-google-drive"></i> Drive متصل: '+status.googleEmail;
+      b.title="مساحة المشاريع الخاصة بهذا الحساب فقط";
+    }catch(_){
+      b.innerHTML='<i class="fa-brands fa-google-drive"></i> ربط مساحة Google Drive الخاصة بي';
+      b.title="اربط حساب Google Drive الخاص بك لحفظ مشاريعك بشكل خاص";
+    }
   }
   async function loadUsers(){
     try {
