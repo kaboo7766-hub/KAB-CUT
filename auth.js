@@ -43,8 +43,10 @@
       <div id="kabLoginView">
         <label for="kabEmail">البريد الإلكتروني</label><input id="kabEmail" type="email" autocomplete="username" placeholder="name@example.com">
         <label for="kabPassword">كلمة المرور</label><input id="kabPassword" type="password" autocomplete="current-password" placeholder="••••••••">
-        <button class="kab-auth-btn" id="kabLoginBtn">تسجيل الدخول</button>
-        <div class="kab-auth-msg" id="kabAuthMsg">لا يوجد تسجيل حسابات مفتوح.</div>
+        <button class="kab-auth-btn" id="kabLoginBtn">تسجيل الدخول بالبريد</button>
+        <div style="display:flex;align-items:center;gap:10px;margin:15px 0;color:#94a3b8;font-size:12px"><span style="height:1px;background:#394455;flex:1"></span>أو<span style="height:1px;background:#394455;flex:1"></span></div>
+        <button class="kab-auth-btn" id="kabGoogleBtn" style="margin-top:0;background:#fff;color:#1f2937;border:1px solid #d1d5db"><i class="fa-brands fa-google" style="margin-inline-end:8px"></i> المتابعة باستخدام Google</button>
+        <div class="kab-auth-msg" id="kabAuthMsg">الدخول متاح للحسابات التي يضيفها المدير فقط.</div>
       </div>
       <div id="kabAdminView" class="kab-auth-hidden">
         <div class="kab-auth-top"><strong>إدارة المستخدمين</strong><button class="kab-auth-small" id="kabBackBtn">العودة للبرنامج</button></div>
@@ -123,6 +125,26 @@
     el("kabLoginBtn").disabled=true;el("kabLoginBtn").textContent="جاري تسجيل الدخول…";
     try{await auth.signInWithEmailAndPassword(email,password);}catch(e){msg("kabAuthMsg","بيانات الدخول غير صحيحة أو الحساب غير مفعّل.");}
     finally{el("kabLoginBtn").disabled=false;el("kabLoginBtn").textContent="تسجيل الدخول";}
+  });
+  el("kabGoogleBtn").addEventListener("click",async()=>{
+    const btn=el("kabGoogleBtn");
+    btn.disabled=true;btn.textContent="جاري فتح Google…";
+    try{
+      const provider=new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({prompt:"select_account"});
+      await auth.signInWithPopup(provider);
+    }catch(e){
+      console.error("KAB CUT Google sign-in:",e);
+      const code=e&&e.code||"";
+      const messages={
+        "auth/popup-blocked":"المتصفح منع نافذة Google. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.",
+        "auth/popup-closed-by-user":"تم إغلاق نافذة Google قبل اكتمال الدخول.",
+        "auth/unauthorized-domain":"هذا النطاق غير مضاف إلى النطاقات المصرح بها في Firebase Authentication.",
+        "auth/operation-not-allowed":"فعّل تسجيل الدخول باستخدام Google من Firebase Authentication ثم أعد المحاولة.",
+        "auth/account-exists-with-different-credential":"هذا البريد مرتبط بطريقة دخول أخرى. استخدم طريقة الدخول الأصلية أو اربط الحسابين بأمان."
+      };
+      msg("kabAuthMsg",messages[code]||"تعذر تسجيل الدخول باستخدام Google. تحقق من إعدادات Google في Firebase ثم أعد المحاولة.");
+    }finally{btn.disabled=false;btn.innerHTML='<i class="fa-brands fa-google" style="margin-inline-end:8px"></i> المتابعة باستخدام Google';}
   });
   el("kabPassword").addEventListener("keydown",e=>{if(e.key==="Enter")el("kabLoginBtn").click();});
   el("kabCreateBtn").addEventListener("click",async()=>{
