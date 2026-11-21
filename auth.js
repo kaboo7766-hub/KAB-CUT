@@ -80,7 +80,7 @@
     show("kabSessionView"); msg("kabAuthMsg","",false);
     el("kabSessionText").textContent="جاري التحقق من صلاحية الحساب…";
     try {
-      if((user.email||"").toLowerCase()===OWNER_EMAIL && user.emailVerified) await api("bootstrap");
+      if((user.email||"").trim().toLowerCase()===OWNER_EMAIL) await api("bootstrap");
       const access=await api("access");
       currentRole=access.role;
       unlock();
