@@ -2873,7 +2873,8 @@
 
     // --- ON-CANVAS INTERACTIVE DRAGGING & WHEEL ZOOM ---
     function setupCanvasInteractions() {
-      canvas.addEventListener('mousedown', (e) => {
+      canvas.style.touchAction = 'none';
+      canvas.addEventListener('pointerdown', (e) => {
         const rect = canvas.getBoundingClientRect();
         const normX = (e.clientX - rect.left) / rect.width;
         const normY = (e.clientY - rect.top) / rect.height;
@@ -2907,7 +2908,7 @@
         }
       });
 
-      window.addEventListener('mousemove', (e) => {
+      window.addEventListener('pointermove', (e) => {
         if (!draggingCanvasLayer) return;
         const rect = canvas.getBoundingClientRect();
 
@@ -2923,9 +2924,10 @@
           draggingCanvasLayer.y = Math.round((e.clientY - dragOffset.y) * scaleY);
           renderInspector();
         }
+        renderFrame();
       });
 
-      window.addEventListener('mouseup', () => {
+      window.addEventListener('pointerup', () => {
         draggingCanvasLayer = null;
         draggingCanvasMode = null;
       });
