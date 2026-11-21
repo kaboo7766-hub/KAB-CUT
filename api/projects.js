@@ -15,7 +15,7 @@ function getAdminApp() {
   return admin.app();
 }
 
-function cleanProject(doc) {
+function cleanProject(doc, includeData = true) {
   const data = doc.data() || {};
   return {
     id: doc.id,
@@ -24,7 +24,7 @@ function cleanProject(doc) {
     ownerEmail: data.ownerEmail || "",
     createdAt: data.createdAt || null,
     updatedAt: data.updatedAt || null,
-    projectData: data.projectData || {}
+    ...(includeData ? { projectData: data.projectData || {} } : {})
   };
 }
 
@@ -64,7 +64,7 @@ module.exports = async function handler(req, res) {
         ? await projects.limit(200).get()
         : await projects.where("ownerUid", "==", decoded.uid).limit(100).get();
 
-      const items = snap.docs.map(cleanProject);
+      const items = snap.docs.map(doc => cleanProject(doc, false));
       items.sort((a, b) => {
         const at = a.updatedAt && a.updatedAt.toMillis ? a.updatedAt.toMillis() : 0;
         const bt = b.updatedAt && b.updatedAt.toMillis ? b.updatedAt.toMillis() : 0;
