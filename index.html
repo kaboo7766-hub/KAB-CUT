@@ -2856,7 +2856,16 @@
 
           if (active) {
             const localTime = (state.currentTime - clip.start) * (clip.videoSpeed || clip.speed || clip.pitchRate || 1);
-            if (forceSeek || Math.abs(el.currentTime - localTime) > 0.25) {
+            // Never repeatedly seek a playing source video during preview.
+            // Its own audio is synchronized by the browser's media pipeline; the
+            // preview clock follows that video in mainLoop. Repeated currentTime
+            // assignments here were interrupting audio decoding on mobile devices.
+            const isPreviewMasterVideo = !state.isExporting &&
+              state.isPlaying &&
+              clip.track === 'video' &&
+              clip.type === 'video';
+            const drift = Math.abs(el.currentTime - localTime);
+            if (!isPreviewMasterVideo && (forceSeek || drift > 0.25)) {
               if (isFinite(localTime)) el.currentTime = Math.min(el.duration || localTime, localTime);
             }
             if (state.isPlaying && el.paused) {
@@ -2971,7 +2980,25 @@
       lastFrameTimestamp = timestamp;
 
       if (state.isPlaying) {
-        state.currentTime += dt;
+        // In preview, let the decoded source video be the master clock.
+        // This prevents the canvas timer and the media element from drifting apart,
+        // which previously caused periodic seeks and audible clicks/dropouts.
+        const masterVideo = !state.isExporting && [...state.clips].reverse().find(clip =>
+          clip.track === 'video' &&
+          clip.type === 'video' &&
+          clip.mediaElement &&
+          clip.mediaElement.readyState >= 2 &&
+          state.currentTime >= clip.start &&
+          state.currentTime <= clip.start + clip.duration
+        );
+
+        if (masterVideo) {
+          const speed = masterVideo.videoSpeed || masterVideo.speed || masterVideo.pitchRate || 1;
+          state.currentTime = masterVideo.start + (masterVideo.mediaElement.currentTime / Math.max(0.01, speed));
+        } else {
+          state.currentTime += dt;
+        }
+
         if (state.currentTime >= state.duration) {
           if (state.isExporting) {
             finishVideoExport();
