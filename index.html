@@ -40,6 +40,8 @@
   </script>
 
   <style>
+    html, body { -webkit-text-size-adjust: 100%; }
+    button, input, select, textarea, label { touch-action: manipulation; }
     * {
       box-sizing: border-box;
       user-select: none;
@@ -126,9 +128,12 @@
       0%, 100% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.4); }
       50% { box-shadow: 0 0 22px rgba(157, 78, 221, 0.7); }
     }
-    .brand-glow {
-      animation: pulseGlow 3s infinite ease-in-out;
-    }
+    .brand-glow { animation: pulseGlow 3s infinite ease-in-out; }
+    @media (max-width: 767px) { header { height:48px !important; min-height:48px; padding:0 6px !important; } header .brand-glow { padding:4px 7px !important; } header .brand-glow span { font-size:13px !important; } main > section { height:30vh !important; min-height:190px; max-height:300px; } main > section nav { min-height:58px; max-height:64px; justify-content:flex-start; gap:3px; padding:3px; } main > section nav button { min-width:54px; min-height:54px; padding:5px 4px !important; } #drawerContainer { min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px !important; } #previewWrapper { min-height:180px; padding:6px !important; } .brand-glow { animation:none !important; } }
+    @media (max-width:380px) { header .bg-studio-surface select { max-width:104px; font-size:10px; } main > section { height:28vh !important; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+    body.kab-low-power .brand-glow, body.kab-low-power .shadow-2xl, body.kab-low-power .shadow-lg { animation:none !important; box-shadow:none !important; }
+    body.kab-low-power .backdrop-blur-sm { backdrop-filter:none !important; }
   </style>
 </head>
 <body class="h-screen w-screen flex flex-col bg-studio-bg text-gray-100 overflow-hidden">
@@ -523,6 +528,8 @@
       fps: 60,
       aspectRatio: '16:9',
       resolutionHeight: 1080,
+      previewFps: 30,
+      lowPowerMode: false,
       pxPerSec: 55,
       snapEnabled: true,
       masterVolume: 1,
@@ -889,10 +896,8 @@
       }
 ];
     const fontOptionsHtml = (selected = 'Cairo') => TREND_FONTS.map(f => `<option value="${f.family}" ${selected === f.family ? 'selected' : ''}>${f.label} — ${f.family}</option>`).join('');
-    const fontCssLink = document.createElement('link');
-    fontCssLink.rel = 'stylesheet';
-    fontCssLink.href = 'https://fonts.googleapis.com/css2?' + TREND_FONTS.map(f => 'family=' + encodeURIComponent(f.family).replace(/%20/g, '+')).join('&') + '&display=swap';
-    document.head.appendChild(fontCssLink);
+    const loadedFontFamilies = new Set(['Cairo']);
+    function ensureFontLoaded(family) { if (!family || loadedFontFamilies.has(family)) return; loadedFontFamilies.add(family); const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(family).replace(/%20/g,'+')+'&display=swap'; document.head.appendChild(link); }
 
     // --- WORLD-CLASS PRO TEXT TEMPLATES LIBRARY ---
     const PRO_TEXT_TEMPLATES = [
@@ -1172,8 +1177,10 @@
 
     // --- INITIALIZATION ---
     window.onload = function () {
+      applyDevicePerformanceProfile();
       updateCanvasDimensions();
       switchTab('effects');
+      renderFrame();
       renderTimeline();
       requestAnimationFrame(mainLoop);
       setupCanvasInteractions();
@@ -2188,6 +2195,7 @@
       state.selectedClipId = id;
       renderTimeline();
       renderInspector();
+      renderFrame();
     }
 
     function renderInspector() {
@@ -2589,7 +2597,9 @@
       const clip = state.clips.find(c => c.id === state.selectedClipId);
       if (!clip) return;
       clip[prop] = val;
+      if (prop === 'fontFamily') ensureFontLoaded(val);
       if (prop === 'text') clip.name = `نص: ${val.slice(0, 14)}`;
+      renderFrame();
       renderInspector();
       renderTimeline();
     }
@@ -2944,8 +2954,17 @@
     }
 
     // --- REAL-TIME 60FPS RENDER ENGINE ---
+    function applyDevicePerformanceProfile() {
+      const memory=Number(navigator.deviceMemory||4), cores=Number(navigator.hardwareConcurrency||4);
+      const mobile=matchMedia('(max-width:767px)').matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
+      const low=memory<=4 || cores<=4; state.lowPowerMode=low||mobile; state.previewFps=low?18:(mobile?24:30);
+      if(state.lowPowerMode){document.body.classList.add('kab-low-power');state.resolutionHeight=720;const sel=document.getElementById('resolutionSelect');if(sel)sel.value='720';}
+    }
+    function setPerformanceMode(mode){const low=mode==='low';state.lowPowerMode=low;state.previewFps=low?18:30;document.body.classList.toggle('kab-low-power',low);if(low&&state.resolutionHeight>720){state.resolutionHeight=720;const sel=document.getElementById('resolutionSelect');if(sel)sel.value='720';updateCanvasDimensions();}showToast(low?'تم تفعيل الأداء للأجهزة الضعيفة':'تم تفعيل الوضع المتوازن');}
     function mainLoop(timestamp) {
       if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
+      const frameInterval = 1000 / (state.isExporting ? 30 : state.previewFps);
+      if (timestamp - lastFrameTimestamp < frameInterval) { requestAnimationFrame(mainLoop); return; }
       const dt = (timestamp - lastFrameTimestamp) / 1000;
       lastFrameTimestamp = timestamp;
 
@@ -2962,7 +2981,7 @@
         updatePlayheadPosition();
       }
 
-      renderFrame();
+      if (state.isPlaying || state.isExporting) renderFrame();
       requestAnimationFrame(mainLoop);
     }
 
