@@ -199,6 +199,7 @@
     <section class="w-full lg:w-[360px] xl:w-[400px] bg-studio-panel border-b lg:border-b-0 lg:border-l border-studio-border flex flex-col sm:flex-row lg:flex-row shrink-0 h-[36vh] lg:h-auto overflow-hidden">
       <!-- Vertical Icon Tabs -->
       <nav class="flex sm:flex-col justify-around sm:justify-start gap-1 p-1.5 bg-[#13161b] border-b sm:border-b-0 sm:border-l border-studio-border shrink-0 overflow-x-auto">
+        <button onclick="switchTab('background')" id="tab-background" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400"><i class="fa-regular fa-images text-base"></i><span>الخلفيات</span></button>
         <button onclick="switchTab('media')" id="tab-media" class="nav-tab flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl text-[11px] font-bold transition min-w-[60px] text-gray-400 hover:text-white hover:bg-studio-surface/60">
           <i class="fa-solid fa-photo-film text-base"></i>
           <span>الوسائط</span>
@@ -426,13 +427,11 @@
 
           <!-- Tracks Container -->
           <div class="flex-1 flex flex-col justify-around py-1 h-[calc(100%-28px)] relative">
-            <!-- Track 1: Effects -->
+            <!-- Independent background layer -->
+            <div id="track-background" class="h-10 relative border-b border-studio-border/30 bg-indigo-950/20"></div>
             <div id="track-effects" class="h-10 relative border-b border-studio-border/30 bg-purple-950/10"></div>
-            <!-- Track 2: Overlays (Text & Stickers) -->
             <div id="track-overlays" class="h-10 relative border-b border-studio-border/30 bg-amber-950/10"></div>
-            <!-- Track 3: Main Video/Image -->
             <div id="track-video" class="h-12 relative border-b border-studio-border/30 bg-cyan-950/10"></div>
-            <!-- Track 4: Audio -->
             <div id="track-audio" class="h-10 relative bg-emerald-950/10"></div>
           </div>
 
@@ -685,6 +684,215 @@
       { id: 'confetti_party', cat: 'particles', name: 'قصاصات احتفال ملونة', icon: 'fa-wand-magic-sparkles', color: 'from-pink-500 via-yellow-400 to-cyan-400', desc: 'أجواء احتفالية مبهجة' },
       { id: 'light_leaks', cat: 'particles', name: 'تسرب ضوئي دافئ', icon: 'fa-sun-plant-wilt', color: 'from-amber-400 via-orange-500 to-rose-500', desc: 'إضاءة شمس سينمائية جانبية' }
     ];
+
+    // --- 50 TRENDING TEXT FONTS (Arabic + Latin) ---
+    const TREND_FONTS = [
+      {
+            "family": "Cairo",
+            "label": "كايرو"
+      },
+      {
+            "family": "Tajawal",
+            "label": "تجوّل"
+      },
+      {
+            "family": "Almarai",
+            "label": "المراعي"
+      },
+      {
+            "family": "Changa",
+            "label": "تشانجا"
+      },
+      {
+            "family": "El Messiri",
+            "label": "المسيري"
+      },
+      {
+            "family": "IBM Plex Sans Arabic",
+            "label": "IBM Plex Arabic"
+      },
+      {
+            "family": "Mada",
+            "label": "مدى"
+      },
+      {
+            "family": "Markazi Text",
+            "label": "مرکزي"
+      },
+      {
+            "family": "Mirza",
+            "label": "ميرزا"
+      },
+      {
+            "family": "Noto Naskh Arabic",
+            "label": "نسخ عربي"
+      },
+      {
+            "family": "Noto Sans Arabic",
+            "label": "نسخ عربي Sans"
+      },
+      {
+            "family": "Reem Kufi",
+            "label": "ريم كوفي"
+      },
+      {
+            "family": "Readex Pro",
+            "label": "ريديكس"
+      },
+      {
+            "family": "Rubik",
+            "label": "روبيك"
+      },
+      {
+            "family": "Lemonada",
+            "label": "ليمونادة"
+      },
+      {
+            "family": "Lalezar",
+            "label": "لاله زار"
+      },
+      {
+            "family": "Marhey",
+            "label": "مرحى"
+      },
+      {
+            "family": "Aref Ruqaa",
+            "label": "رقعة"
+      },
+      {
+            "family": "Amiri",
+            "label": "أميري"
+      },
+      {
+            "family": "Rakkas",
+            "label": "رقاص"
+      },
+      {
+            "family": "Lateef",
+            "label": "لطيف"
+      },
+      {
+            "family": "Harmattan",
+            "label": "حرمتان"
+      },
+      {
+            "family": "Baloo Bhaijaan 2",
+            "label": "بالو"
+      },
+      {
+            "family": "Kufam",
+            "label": "كوفام"
+      },
+      {
+            "family": "Alexandria",
+            "label": "الإسكندرية"
+      },
+      {
+            "family": "Fustat",
+            "label": "فسطاط"
+      },
+      {
+            "family": "Noto Kufi Arabic",
+            "label": "كوفي عربي"
+      },
+      {
+            "family": "Scheherazade New",
+            "label": "شهرزاد"
+      },
+      {
+            "family": "Vazirmatn",
+            "label": "وزيرمتن"
+      },
+      {
+            "family": "Noto Sans",
+            "label": "نوتو سانس"
+      },
+      {
+            "family": "Inter",
+            "label": "إنتر"
+      },
+      {
+            "family": "Poppins",
+            "label": "بوبينز"
+      },
+      {
+            "family": "Montserrat",
+            "label": "مونتسيرات"
+      },
+      {
+            "family": "Oswald",
+            "label": "أوزوالد"
+      },
+      {
+            "family": "Bebas Neue",
+            "label": "بيبس نيو"
+      },
+      {
+            "family": "Anton",
+            "label": "أنتون"
+      },
+      {
+            "family": "Roboto",
+            "label": "روبوتو"
+      },
+      {
+            "family": "Open Sans",
+            "label": "أوبن سانس"
+      },
+      {
+            "family": "Lato",
+            "label": "لاتو"
+      },
+      {
+            "family": "Playfair Display",
+            "label": "بلايفير"
+      },
+      {
+            "family": "Merriweather",
+            "label": "ميريويذر"
+      },
+      {
+            "family": "DM Sans",
+            "label": "دي إم سانس"
+      },
+      {
+            "family": "Manrope",
+            "label": "مانروب"
+      },
+      {
+            "family": "Space Grotesk",
+            "label": "سبيس جروتسك"
+      },
+      {
+            "family": "Outfit",
+            "label": "أوتفيت"
+      },
+      {
+            "family": "Archivo Black",
+            "label": "أرشيفو"
+      },
+      {
+            "family": "League Spartan",
+            "label": "ليج سبارتان"
+      },
+      {
+            "family": "Urbanist",
+            "label": "أوربانست"
+      },
+      {
+            "family": "Sora",
+            "label": "سورا"
+      },
+      {
+            "family": "Plus Jakarta Sans",
+            "label": "جاكرتا"
+      }
+];
+    const fontOptionsHtml = (selected = 'Cairo') => TREND_FONTS.map(f => `<option value="${f.family}" ${selected === f.family ? 'selected' : ''}>${f.label} — ${f.family}</option>`).join('');
+    const fontCssLink = document.createElement('link');
+    fontCssLink.rel = 'stylesheet';
+    fontCssLink.href = 'https://fonts.googleapis.com/css2?' + TREND_FONTS.map(f => 'family=' + encodeURIComponent(f.family).replace(/%20/g, '+')).join('&') + '&display=swap';
+    document.head.appendChild(fontCssLink);
 
     // --- WORLD-CLASS PRO TEXT TEMPLATES LIBRARY ---
     const PRO_TEXT_TEMPLATES = [
@@ -1368,6 +1576,8 @@
             `}
           </div>
         `;
+      } else if (tabId === 'background') {
+        container.innerHTML = `<div class="space-y-3"><h3 class="text-sm font-extrabold text-white">الخلفيات والطبقات</h3><p class="text-[11px] text-gray-400">أضف خلفية مستقلة أسفل الفيديو، أو ارفع صورة خلفية.</p><button onclick="addBackgroundColor()" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">إضافة خلفية بلون</button><label class="block cursor-pointer w-full py-2.5 rounded-xl bg-studio-surface border border-studio-border text-center text-xs font-bold">رفع صورة كخلفية<input type="file" accept="image/*" class="hidden" onchange="addBackgroundImage(event)"></label><button onclick="addTextLayer()" class="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs">إضافة طبقة نص جديدة</button><div class="text-[11px] text-gray-400">إزالة خلفية صورة: حدد صورة من الخط الزمني، ثم استخدم أداة إزالة الخلفية في خصائصها.</div></div>`;
       } else if (tabId === 'effects') {
         const filteredFx = state.fxCategory === 'all'
           ? CAPCUT_EFFECTS
@@ -1441,18 +1651,8 @@
                 <div>
                   <label class="text-[10px] text-gray-400 block mb-1">الخط العربي (خطوط تريند)</label>
                   <select id="newTextFont" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1.5 text-xs text-white">
-                    <option value="Cairo">Cairo (تريند عصري)</option>
-                    <option value="Lalezar">Lalezar (عريض بوسترات)</option>
-                    <option value="Changa">Changa (قوي هورموزي)</option>
-                    <option value="Marhey">Marhey (مرح تريند)</option>
-                    <option value="Aref Ruqaa">Aref Ruqaa (رقعة فني)</option>
-                    <option value="Tajawal">Tajawal (ناعم احترافي)</option>
-                    <option value="IBM Plex Sans Arabic">IBM Plex (تقني عالمي)</option>
-                    <option value="Rubik">Rubik (هندسي جريء)</option>
-                    <option value="Lemonada">Lemonada (يدوي مميز)</option>
-                    <option value="Amiri">Amiri (كلاسيكي فاخر)</option>
-                    <option value="Readex Pro">Readex Pro (حديث)</option>
-                  </select>
+                  ${fontOptionsHtml()}
+                </select>
                 </div>
                 <div>
                   <label class="text-[10px] text-gray-400 block mb-1">حركة الدخول</label>
@@ -1892,6 +2092,33 @@
       showToast('تمت إضافة النص إلى الشاشة');
     }
 
+
+    // --- BACKGROUND & LAYER WORKSPACE ---
+    function addBackgroundColor() {
+      saveHistory();
+      const clip={id:'bg_'+Date.now(),track:'background',type:'background_color',name:'خلفية ملونة',color:'#182235',start:0,duration:Math.max(5,state.duration),opacity:1,layerOrder:0};
+      state.clips.push(clip); document.getElementById('emptyStateOverlay').classList.add('hidden'); recalcTotalDuration(); selectClip(clip.id); renderTimeline(); showToast('تمت إضافة طبقة خلفية مستقلة');
+    }
+    function addBackgroundImage(event) {
+      const file=event.target.files && event.target.files[0]; if(!file) return;
+      if(!file.type.startsWith('image/')) { showToast('اختر صورة لاستخدامها كخلفية'); event.target.value=''; return; }
+      const url=URL.createObjectURL(file), img=new Image(); img.onload=()=>{ saveHistory(); const clip={id:'bgimg_'+Date.now(),track:'background',type:'background_image',name:'خلفية: '+file.name,mediaElement:img,url,start:0,duration:Math.max(5,state.duration),opacity:1,layerOrder:0}; state.clips.push(clip); document.getElementById('emptyStateOverlay').classList.add('hidden'); recalcTotalDuration(); selectClip(clip.id); renderTimeline(); showToast('تمت إضافة الصورة كخلفية خلف الفيديو'); }; img.onerror=()=>showToast('تعذر تحميل صورة الخلفية'); img.src=url; event.target.value='';
+    }
+    function moveSelectedLayer(direction) {
+      const clip=state.clips.find(c=>c.id===state.selectedClipId); if(!clip || !['overlays','background'].includes(clip.track)) return showToast('حدد طبقة نص أو خلفية أولاً');
+      saveHistory(); const siblings=state.clips.filter(c=>c.track===clip.track).sort((a,b)=>(a.layerOrder||0)-(b.layerOrder||0)); const i=siblings.findIndex(c=>c.id===clip.id); const j=Math.max(0,Math.min(siblings.length-1,i+direction)); if(i===j) return;
+      const other=siblings[j]; const order=clip.layerOrder||i; clip.layerOrder=other.layerOrder||j; other.layerOrder=order; renderTimeline(); renderFrame(); showToast(direction>0?'تم رفع الطبقة للأمام':'تم خفض الطبقة للخلف');
+    }
+    function removeSelectedImageBackground() {
+      const clip=state.clips.find(c=>c.id===state.selectedClipId); if(!clip || clip.type!=='image' || !clip.mediaElement) return showToast('حدد صورة ثابتة من الخط الزمني أولاً');
+      const colorInput=document.getElementById('chromaKeyColor'); const toleranceInput=document.getElementById('chromaKeyTolerance'); const hex=(colorInput&&colorInput.value)||'#ffffff'; const tol=Number(toleranceInput&&toleranceInput.value)||48;
+      const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); const source=clip.mediaElement; const c=document.createElement('canvas'); c.width=source.naturalWidth||source.width; c.height=source.naturalHeight||source.height; const cx=c.getContext('2d',{willReadFrequently:true}); cx.drawImage(source,0,0); const image=cx.getImageData(0,0,c.width,c.height); const d=image.data;
+      for(let i=0;i<d.length;i+=4){const dist=Math.sqrt((d[i]-rgb[0])**2+(d[i+1]-rgb[1])**2+(d[i+2]-rgb[2])**2); if(dist<tol) d[i+3]=0; else if(dist<tol+24) d[i+3]=Math.round(d[i+3]*((dist-tol)/24));}
+      cx.putImageData(image,0,0); clip.processedElement=c; saveHistory(); renderFrame(); showToast('تمت إزالة اللون المحدد من خلفية الصورة. أضف خلفية جديدة من تبويب الخلفيات.');
+    }
+    function resetImageBackground() { const clip=state.clips.find(c=>c.id===state.selectedClipId); if(!clip || !clip.processedElement) return showToast('لا توجد إزالة خلفية لإلغائها'); saveHistory(); delete clip.processedElement; renderFrame(); showToast('تمت استعادة الصورة الأصلية'); }
+    function addTextLayer() { document.getElementById('newTextInput').value='طبقة نص جديدة'; addTextOverlay(); }
+
     function addStickerOverlay(emoji) {
       document.getElementById('emptyStateOverlay').classList.add('hidden');
       saveHistory();
@@ -1990,6 +2217,9 @@
         </div>
       `;
 
+      if (clip.track === 'background') {
+        html += `<div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3"><div class="text-xs font-bold text-studio-cyan">إعدادات الخلفية</div><label class="text-[11px] text-gray-300">لون الخلفية</label><input type="color" value="${clip.color || '#111827'}" oninput="updateClipProp('color', this.value)" class="w-full h-9 rounded" /><button onclick="moveSelectedLayer(-1)" class="w-full py-2 rounded bg-studio-bg border border-studio-border text-xs">إرسال للخلف</button></div>`;
+      }
       if (clip.type === 'effect') {
         html += `
           <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3">
@@ -2024,17 +2254,7 @@
               <div>
                 <label class="text-[11px] text-gray-400 block mb-1">نوع الخط</label>
                 <select onchange="updateClipProp('fontFamily', this.value)" class="w-full bg-studio-bg border border-studio-border rounded-lg px-2 py-1 text-xs text-white">
-                  <option value="Cairo" ${clip.fontFamily === 'Cairo' ? 'selected' : ''}>Cairo (عصري)</option>
-                  <option value="Lalezar" ${clip.fontFamily === 'Lalezar' ? 'selected' : ''}>Lalezar (تريند عريض)</option>
-                  <option value="Changa" ${clip.fontFamily === 'Changa' ? 'selected' : ''}>Changa (قوي)</option>
-                  <option value="Marhey" ${clip.fontFamily === 'Marhey' ? 'selected' : ''}>Marhey (مرح)</option>
-                  <option value="Aref Ruqaa" ${clip.fontFamily === 'Aref Ruqaa' ? 'selected' : ''}>Aref Ruqaa (رقعة)</option>
-                  <option value="Tajawal" ${clip.fontFamily === 'Tajawal' ? 'selected' : ''}>Tajawal</option>
-                  <option value="IBM Plex Sans Arabic" ${clip.fontFamily === 'IBM Plex Sans Arabic' ? 'selected' : ''}>IBM Plex</option>
-                  <option value="Rubik" ${clip.fontFamily === 'Rubik' ? 'selected' : ''}>Rubik</option>
-                  <option value="Lemonada" ${clip.fontFamily === 'Lemonada' ? 'selected' : ''}>Lemonada</option>
-                  <option value="Amiri" ${clip.fontFamily === 'Amiri' ? 'selected' : ''}>Amiri</option>
-                  <option value="Readex Pro" ${clip.fontFamily === 'Readex Pro' ? 'selected' : ''}>Readex Pro</option>
+                  ${fontOptionsHtml(clip.fontFamily || 'Cairo')}
                 </select>
               </div>
               <div>
@@ -2053,6 +2273,12 @@
               </div>
             </div>
 
+            <div class="pt-2">
+              <div class="flex justify-between text-[11px] mb-1"><span>حجم الخط (تكبير / تصغير)</span><span class="font-mono text-studio-cyan">${clip.fontSize || 64}px</span></div>
+              <input type="range" min="12" max="240" step="1" value="${clip.fontSize || 64}" oninput="updateClipProp('fontSize', parseInt(this.value, 10))" class="w-full" />
+              <div class="flex gap-2"><button onclick="updateClipProp('fontSize', Math.max(12, (state.clips.find(c=>c.id===state.selectedClipId).fontSize||64)-4))" class="flex-1 py-1 rounded bg-studio-bg border border-studio-border text-xs">− تصغير</button><button onclick="updateClipProp('fontSize', Math.min(240, (state.clips.find(c=>c.id===state.selectedClipId).fontSize||64)+4))" class="flex-1 py-1 rounded bg-studio-bg border border-studio-border text-xs">+ تكبير</button></div>
+            </div>
+          <div class="grid grid-cols-2 gap-2 pt-2"><button onclick="moveSelectedLayer(1)" class="py-2 rounded-lg bg-studio-bg border border-studio-border text-[11px]">رفع الطبقة ↑</button><button onclick="moveSelectedLayer(-1)" class="py-2 rounded-lg bg-studio-bg border border-studio-border text-[11px]">خفض الطبقة ↓</button></div>
             <div class="grid grid-cols-3 gap-2 pt-1">
               <div>
                 <label class="text-[10px] text-gray-400 block mb-1">لون أساسي</label>
@@ -2080,6 +2306,9 @@
         `;
       }
 
+      if (clip.type === 'image' && clip.track === 'video') {
+        html += `<div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2"><div class="text-xs font-bold text-studio-cyan">إزالة خلفية الصورة (Chroma Key)</div><label class="text-[11px] text-gray-400">اللون المراد إزالته</label><input id="chromaKeyColor" type="color" value="#ffffff" class="w-full h-8 rounded" /><label class="text-[11px] text-gray-400">قوة الإزالة</label><input id="chromaKeyTolerance" type="range" min="10" max="180" value="48" class="w-full" /><button onclick="removeSelectedImageBackground()" class="w-full py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">إزالة اللون من الخلفية</button><button onclick="resetImageBackground()" class="w-full py-2 rounded-lg bg-studio-bg border border-studio-border text-xs">استعادة الصورة الأصلية</button><p class="text-[10px] text-gray-500">الأداة الحالية لإزالة الخلفيات ذات اللون المتقارب، مثل الأبيض أو الأخضر؛ وليست قصاً ذكياً تلقائياً للأشخاص.</p></div>`;
+      }
       if (clip.track === 'video' || clip.track === 'overlays') {
         html += `
           <div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-3">
@@ -2398,7 +2627,7 @@
       }
       ruler.innerHTML = ticksHtml;
 
-      ['effects', 'overlays', 'video', 'audio'].forEach(t => {
+      ['background', 'effects', 'overlays', 'video', 'audio'].forEach(t => {
         document.getElementById(`track-${t}`).innerHTML = '';
       });
 
@@ -2413,6 +2642,7 @@
         let bgClass = 'bg-cyan-600/80 border-cyan-400';
         if (clip.track === 'effects') bgClass = 'bg-purple-600/80 border-purple-400';
         else if (clip.track === 'overlays') bgClass = 'bg-amber-600/80 border-amber-400';
+        else if (clip.track === 'background') bgClass = 'bg-indigo-600/80 border-indigo-400';
         else if (clip.track === 'audio') bgClass = 'bg-emerald-600/80 border-emerald-400';
 
         const el = document.createElement('div');
@@ -2750,6 +2980,23 @@
       const filterStr = `${presetCss !== 'none' ? presetCss : ''} brightness(${adj.brightness}%) contrast(${adj.contrast}%) saturate(${adj.saturate}%) hue-rotate(${adj.hue}deg) blur(${adj.blur}px)`.trim();
       offCtx.filter = filterStr || 'none';
 
+      const activeBackgrounds = state.clips.filter(c => c.track === 'background' && t >= c.start && t <= c.start + c.duration).sort((a,b)=>(a.layerOrder||0)-(b.layerOrder||0));
+      activeBackgrounds.forEach(bg => {
+        offCtx.save();
+        offCtx.globalAlpha = bg.opacity ?? 1;
+        if (bg.type === 'background_color') {
+          offCtx.fillStyle = bg.color || '#111827';
+          offCtx.fillRect(0, 0, W, H);
+        } else if (bg.mediaElement) {
+          const el = bg.mediaElement;
+          const mw = el.naturalWidth || el.videoWidth || el.width || W;
+          const mh = el.naturalHeight || el.videoHeight || el.height || H;
+          const fit = Math.max(W / mw, H / mh);
+          const dw = mw * fit, dh = mh * fit;
+          offCtx.drawImage(el, (W-dw)/2, (H-dh)/2, dw, dh);
+        }
+        offCtx.restore();
+      });
       const activeVideoClips = state.clips.filter(c => c.track === 'video' && t >= c.start && t <= c.start + c.duration);
       activeVideoClips.forEach(clip => {
         offCtx.save();
@@ -2778,7 +3025,7 @@
 
       offCtx.filter = 'none';
 
-      const activeOverlays = state.clips.filter(c => c.track === 'overlays' && t >= c.start && t <= c.start + c.duration);
+      const activeOverlays = state.clips.filter(c => c.track === 'overlays' && t >= c.start && t <= c.start + c.duration).sort((a,b)=>(a.layerOrder||0)-(b.layerOrder||0));
       activeOverlays.forEach(ov => {
         const localT = t - ov.start;
         offCtx.save();
