@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
     const token = header.startsWith("Bearer ") ? header.slice(7) : "";
     if (!token) return res.status(401).json({ error: "سجّل الدخول أولاً." });
     const decoded = await app().auth().verifyIdToken(token, true);
+    if (decoded.email_verified !== true) return res.status(403).json({ error: "يجب تأكيد بريد حسابك قبل ربط Google Drive." });
     const userDoc = await app().firestore().collection("users").doc(decoded.uid).get();
     const owner = String(decoded.email || "").toLowerCase() === "kaboo7766@gmail.com";
     if (!owner && (!userDoc.exists || userDoc.data().status !== "active")) {
