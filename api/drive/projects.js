@@ -66,6 +66,7 @@ module.exports = async function handler(req, res) {
     const bearer = header.startsWith("Bearer ") ? header.slice(7) : "";
     if (!bearer) return res.status(401).json({ error: "سجّل الدخول أولاً." });
     const decoded = await app().auth().verifyIdToken(bearer, true);
+    if (decoded.email_verified !== true) return res.status(403).json({ error: "يجب تأكيد بريد حسابك قبل استخدام مساحة Drive." });
     const userDoc = await app().firestore().collection("users").doc(decoded.uid).get();
     const isOwner = String(decoded.email || "").toLowerCase() === "kaboo7766@gmail.com";
     if (!isOwner && (!userDoc.exists || userDoc.data().status !== "active")) return res.status(403).json({ error: "الحساب غير نشط أو غير مصرح له." });
