@@ -2134,6 +2134,21 @@
                 oninput="updateClipProp('opacity', parseFloat(this.value))" class="w-full" />
             </div>
             ${clip.track === 'video' ? `
+              <div class="bg-studio-bg p-2 rounded-lg border border-studio-cyan/30 space-y-2">
+                <div class="text-xs font-bold text-studio-cyan">سرعة الفيديو</div>
+                <div class="flex justify-between text-[11px]"><span>سرعة التشغيل</span><span class="font-mono">${(clip.videoSpeed || 1).toFixed(2)}x</span></div>
+                <input type="range" min="0.25" max="4" step="0.05" value="${clip.videoSpeed || 1}" oninput="setVideoSpeed(this.value)" class="w-full" />
+                <div class="grid grid-cols-4 gap-1">${[0.5,1,1.5,2].map(v=>`<button onclick="setVideoSpeed(${v})" class="text-[10px] py-1 rounded bg-studio-surface border border-studio-border">${v}x</button>`).join('')}</div>
+              </div>
+              <div class="bg-studio-bg p-2 rounded-lg border border-purple-400/30 space-y-2">
+                <div class="text-xs font-bold text-purple-300">Keyframes — تحريك تلقائي</div>
+                <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ تسجيل كي فريم عند المؤشر</button>
+                <div class="text-[10px] text-gray-400">سجّل موقع/حجم/دوران/شفافية المقطع عند الوقت الحالي، ثم غيّر القيم وسجّل كي فريم آخر.</div>
+                <div class="text-[11px] text-cyan-300">عدد الكي فريم: ${(clip.keyframes || []).length}</div>
+                <button onclick="clearClipKeyframes()" class="w-full py-1 rounded bg-studio-surface border border-studio-border text-[10px]">مسح الكي فريمات</button>
+              </div>
+              ` : ''}
+              ${clip.track === 'video' ? `
               <div class="grid grid-cols-2 gap-2 pt-1">
                 <button onclick="updateClipProp('flipH', !${!!clip.flipH})" class="py-1.5 rounded-lg bg-studio-bg hover:bg-studio-hover border border-studio-border text-[11px] font-bold">
                   <i class="fa-solid fa-left-right ml-1 text-studio-cyan"></i> قلب أفقي
@@ -2296,6 +2311,51 @@
       switchTab('audio');
       renderInspector();
       showToast(`✨ تم تحسين الصوت وتطبيق تون "${profile.name.split('(')[0].trim()}" بنجاح!`);
+    }
+
+    function setVideoSpeed(value) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
+      if (!clip) return;
+      const speed = Math.max(0.25, Math.min(4, parseFloat(value) || 1));
+      if (!clip.sourceDuration) clip.sourceDuration = clip.duration * (clip.videoSpeed || 1);
+      clip.videoSpeed = speed;
+      clip.duration = Math.max(0.1, clip.sourceDuration / speed);
+      saveHistory();
+      recalcTotalDuration();
+      renderTimeline();
+      renderInspector();
+      syncMediaElements(true);
+    }
+
+    function addClipKeyframe() {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
+      if (!clip) return showToast('حدد فيديو أولاً');
+      if (!clip.keyframes) clip.keyframes = [];
+      const kf = { time: Math.max(0, state.currentTime - clip.start), x: clip.x || 0, y: clip.y || 0, scale: clip.scale || 1, rotation: clip.rotation || 0, opacity: clip.opacity ?? 1 };
+      const existing = clip.keyframes.findIndex(k => Math.abs(k.time - kf.time) < 0.05);
+      if (existing >= 0) clip.keyframes[existing] = kf; else clip.keyframes.push(kf);
+      clip.keyframes.sort((a,b)=>a.time-b.time);
+      saveHistory(); renderInspector(); renderTimeline();
+      showToast('تم تسجيل الكي فريم عند ' + kf.time.toFixed(2) + ' ثانية');
+    }
+
+    function clearClipKeyframes() {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
+      if (!clip) return;
+      clip.keyframes = [];
+      saveHistory(); renderInspector(); renderTimeline();
+      showToast('تم مسح كي فريمات المقطع');
+    }
+
+    function getClipKeyframeValues(clip, localTime) {
+      const frames = (clip.keyframes || []).slice().sort((a,b)=>a.time-b.time);
+      if (!frames.length) return null;
+      if (localTime <= frames[0].time) return frames[0];
+      if (localTime >= frames[frames.length-1].time) return frames[frames.length-1];
+      const nextIndex = frames.findIndex(f=>f.time >= localTime);
+      const a=frames[nextIndex-1], b=frames[nextIndex];
+      const p=(localTime-a.time)/Math.max(0.0001,b.time-a.time);
+      return { x:a.x+(b.x-a.x)*p, y:a.y+(b.y-a.y)*p, scale:a.scale+(b.scale-a.scale)*p, rotation:a.rotation+(b.rotation-a.rotation)*p, opacity:a.opacity+(b.opacity-a.opacity)*p };
     }
 
     function updateClipProp(prop, val) {
@@ -2557,7 +2617,7 @@
           }
 
           if (active) {
-            const localTime = (state.currentTime - clip.start) * (clip.speed || clip.pitchRate || 1);
+            const localTime = (state.currentTime - clip.start) * (clip.videoSpeed || clip.speed || clip.pitchRate || 1);
             if (forceSeek || Math.abs(el.currentTime - localTime) > 0.25) {
               if (isFinite(localTime)) el.currentTime = Math.min(el.duration || localTime, localTime);
             }
@@ -2695,10 +2755,12 @@
       const activeVideoClips = state.clips.filter(c => c.track === 'video' && t >= c.start && t <= c.start + c.duration);
       activeVideoClips.forEach(clip => {
         offCtx.save();
-        offCtx.globalAlpha = clip.opacity ?? 1;
-        offCtx.translate(W / 2 + (clip.x || 0), H / 2 + (clip.y || 0));
-        offCtx.rotate(((clip.rotation || 0) * Math.PI) / 180);
-        offCtx.scale((clip.scale || 1) * (clip.flipH ? -1 : 1), (clip.scale || 1) * (clip.flipV ? -1 : 1));
+        const kf = getClipKeyframeValues(clip, t - clip.start);
+        const tr = kf || clip;
+        offCtx.globalAlpha = tr.opacity ?? clip.opacity ?? 1;
+        offCtx.translate(W / 2 + (tr.x ?? clip.x ?? 0), H / 2 + (tr.y ?? clip.y ?? 0));
+        offCtx.rotate(((tr.rotation ?? clip.rotation ?? 0) * Math.PI) / 180);
+        offCtx.scale((tr.scale ?? clip.scale ?? 1) * (clip.flipH ? -1 : 1), (tr.scale ?? clip.scale ?? 1) * (clip.flipV ? -1 : 1));
 
         if (clip.type === 'demo_scene') {
           drawProceduralDemoScene(offCtx, W, H, t - clip.start);
