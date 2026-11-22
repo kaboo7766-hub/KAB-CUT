@@ -129,8 +129,8 @@
       50% { box-shadow: 0 0 22px rgba(157, 78, 221, 0.7); }
     }
     .brand-glow { animation: pulseGlow 3s infinite ease-in-out; }
-    @media (max-width: 767px) { header { height:48px !important; min-height:48px; padding:0 6px !important; } header .brand-glow { padding:4px 7px !important; } header .brand-glow span { font-size:13px !important; } main > section { height:30vh !important; min-height:190px; max-height:300px; } main > section nav { min-height:58px; max-height:64px; justify-content:flex-start; gap:3px; padding:3px; } main > section nav button { min-width:54px; min-height:54px; padding:5px 4px !important; } #drawerContainer { min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px !important; } #previewWrapper { min-height:180px; padding:6px !important; } .brand-glow { animation:none !important; } }
-    @media (max-width:380px) { header .bg-studio-surface select { max-width:104px; font-size:10px; } main > section { height:28vh !important; } }
+    @media (max-width: 767px) { header { height:48px !important; min-height:48px; padding:0 6px !important; } header .brand-glow { padding:4px 7px !important; } header .brand-glow span { font-size:13px !important; } main > section:first-child { height:28vh !important; min-height:180px; max-height:250px; } main > section:nth-child(2) { height:auto !important; min-height:220px; max-height:none; flex:1 1 auto; } main > section nav { min-height:58px; max-height:64px; justify-content:flex-start; gap:3px; padding:3px; } main > section nav button { min-width:54px; min-height:54px; padding:5px 4px !important; } #drawerContainer { min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px !important; } #previewWrapper { min-height:150px; padding:6px !important; } footer { height:300px !important; min-height:300px; } #timelineScrollArea { min-height:0; touch-action:pan-y; } #timelineContent { min-width:1200px; } #timelineContent [id^="track-"] { min-height:34px; } #timelineContent [id="track-video"] { min-height:48px; } .brand-glow { animation:none !important; } .clip-handle { width:12px; min-width:12px; } #timelineScrollArea .cursor-grab { touch-action:none; } }
+    @media (max-width:380px) { header .bg-studio-surface select { max-width:104px; font-size:10px; } main > section:first-child { height:26vh !important; } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
     body.kab-low-power .brand-glow, body.kab-low-power .shadow-2xl, body.kab-low-power .shadow-lg { animation:none !important; box-shadow:none !important; }
     body.kab-low-power .backdrop-blur-sm { backdrop-filter:none !important; }
@@ -434,7 +434,7 @@
       </div>
 
       <!-- Scrollable Tracks Canvas -->
-      <div id="timelineScrollArea" class="flex-1 overflow-x-auto overflow-y-hidden relative bg-[#0e1014]" onmousedown="handleTimelineMouseDown(event)">
+      <div id="timelineScrollArea" class="flex-1 overflow-x-auto overflow-y-hidden relative bg-[#0e1014]" onpointerdown="handleTimelineMouseDown(event)">
         <div id="timelineContent" class="h-full relative" style="width: 1600px;">
           <!-- Time Ruler -->
           <div id="timeRuler" class="h-7 bg-[#161920] border-b border-studio-border relative timeline-ruler-bg cursor-pointer">
@@ -2678,20 +2678,26 @@
         el.style.right = `${rightPx}px`;
         el.style.width = `${widthPx}px`;
 
+        const clipIcon = clip.type === 'video' || clip.type === 'demo_scene' ? 'fa-film' : clip.type === 'image' ? 'fa-image' : clip.type === 'audio' ? 'fa-music' : 'fa-wand-magic-sparkles';
+        const clipKind = clip.type === 'video' || clip.type === 'demo_scene' ? 'فيديو' : clip.type === 'image' ? 'صورة' : clip.type === 'audio' ? 'صوت' : 'مؤثر';
         el.innerHTML = `
-          <div class="clip-handle h-full bg-black/25 shrink-0" data-resize="start" data-id="${clip.id}"></div>
-          <div class="flex-1 px-2 truncate text-[11px] font-bold text-white pointer-events-none">
-            ${clip.name}
+          <div class="clip-handle h-full bg-black/30 shrink-0" data-resize="start" data-id="${clip.id}" aria-label="تعديل بداية المقطع"></div>
+          <div class="flex-1 min-w-0 px-2 flex items-center gap-1.5 truncate text-[10px] sm:text-[11px] font-bold text-white pointer-events-none">
+            <i class="fa-solid ${clipIcon} shrink-0"></i>
+            <span class="truncate">${clip.name}</span>
+            <span class="shrink-0 rounded bg-black/25 px-1 text-[9px]">${clipKind}</span>
           </div>
-          <div class="clip-handle h-full bg-black/25 shrink-0" data-resize="end" data-id="${clip.id}"></div>
+          <div class="clip-handle h-full bg-black/30 shrink-0" data-resize="end" data-id="${clip.id}" aria-label="تعديل نهاية المقطع"></div>
         `;
 
-        el.onmousedown = (e) => {
+        el.onpointerdown = (e) => {
           e.stopPropagation();
+          if (e.pointerType === 'touch') e.preventDefault();
           selectClip(clip.id);
           const resizeMode = e.target.getAttribute('data-resize');
           startClipDrag(e, clip, resizeMode);
         };
+        el.style.touchAction = 'none';
 
         trackEl.appendChild(el);
       });
@@ -2730,11 +2736,13 @@
       };
 
       const onUp = () => {
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
       };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp, { once: true });
+      window.addEventListener('pointercancel', onUp, { once: true });
     }
 
     function handleTimelineMouseDown(e) {
@@ -2749,11 +2757,13 @@
 
       const onMove = (ev) => updateScrub(ev);
       const onUp = () => {
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
       };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp, { once: true });
+      window.addEventListener('pointercancel', onUp, { once: true });
     }
 
     function updatePlayheadPosition() {
