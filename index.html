@@ -2577,6 +2577,44 @@
     // connection to the speakers. If processing cannot be initialized, mute the
     // element rather than leaking the untreated source audio.
     const enhancedAudioNodes = new WeakMap();
+    const studioMediaSources = new WeakMap();
+
+    function getStudioMediaSource(mediaElement, actx) {
+      let source = studioMediaSources.get(mediaElement);
+      if (!source) {
+        source = actx.createMediaElementSource(mediaElement);
+        studioMediaSources.set(mediaElement, source);
+      }
+      return source;
+    }
+
+    function connectTimelineAudioToExport(stream) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) throw new Error('Web Audio is not supported; audio export is unavailable');
+      if (!window._studioAudioCtx) window._studioAudioCtx = new AudioContextClass();
+      const actx = window._studioAudioCtx;
+      const destination = actx.createMediaStreamDestination();
+      const connected = new Set();
+
+      state.clips.forEach(clip => {
+        const media = clip.mediaElement;
+        if (!media || (clip.type !== 'video' && clip.type !== 'audio') || connected.has(media)) return;
+        connected.add(media);
+        const processed = enhancedAudioNodes.get(media);
+        if (processed) {
+          processed.output.connect(destination);
+        } else {
+          const source = getStudioMediaSource(media, actx);
+          // Preserve live preview while also recording the same source into the export.
+          source.connect(actx.destination);
+          source.connect(destination);
+        }
+      });
+
+      const audioTracks = destination.stream.getAudioTracks();
+      audioTracks.forEach(track => stream.addTrack(track));
+      return { actx, destination, audioTracks };
+    }
 
     function applyStudioAudioDSP(mediaElement, profile) {
       if (!mediaElement || typeof mediaElement.play !== 'function') return false;
@@ -2589,7 +2627,7 @@
 
         let chain = enhancedAudioNodes.get(mediaElement);
         if (!chain) {
-          const source = actx.createMediaElementSource(mediaElement);
+          const source = getStudioMediaSource(mediaElement, actx);
           const highpass = actx.createBiquadFilter();
           highpass.type = 'highpass';
           highpass.frequency.value = 65;
@@ -3834,18 +3872,28 @@
       document.getElementById('exportModal').classList.remove('flex');
     }
 
-    function startVideoExport() {
+    async function startVideoExport() {
       try {
         const bitrate = parseInt(document.getElementById('exportBitrateSelect').value, 10);
         const stream = canvas.captureStream(60);
+        const audioExport = connectTimelineAudioToExport(stream);
+        if (audioExport.actx.state === 'suspended') await audioExport.actx.resume();
         recordedChunks = [];
 
-        const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+        const mimeTypes = [
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8,opus',
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ];
         const chosenMime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || '';
+        if (!chosenMime) throw new Error('No supported WebM export format');
 
         mediaRecorder = new MediaRecorder(stream, {
           mimeType: chosenMime,
-          videoBitsPerSecond: bitrate
+          videoBitsPerSecond: bitrate,
+          audioBitsPerSecond: 192000
         });
 
         mediaRecorder.ondataavailable = (e) => {
@@ -3853,6 +3901,7 @@
         };
 
         mediaRecorder.onstop = () => {
+          audioExport.audioTracks.forEach(track => track.stop());
           const blob = new Blob(recordedChunks, { type: chosenMime || 'video/webm' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -3889,7 +3938,12 @@
         }, 100);
       } catch (err) {
         state.isExporting = false;
-        showToast('تعذر بدء التصدير في هذا المتصفح');
+        state.isPlaying = false;
+        updatePlayPauseUI();
+        console.error('MontaSync export failed:', err);
+        showToast(err && err.message
+          ? 'تعذر التصدير: ' + err.message
+          : 'تعذر بدء التصدير في هذا المتصفح');
       }
     }
 
