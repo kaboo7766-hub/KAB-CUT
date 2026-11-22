@@ -2964,13 +2964,25 @@
 
     function deleteSelectedClip() {
       if (!state.selectedClipId) return showToast('لا يوجد عنصر محدد للحذف');
+      const clipToDelete = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clipToDelete) return showToast('العنصر المحدد غير موجود');
       saveHistory();
+
+      // Stop the underlying media immediately so a removed video's or audio's
+      // sound cannot continue after its timeline clip has been deleted.
+      if (clipToDelete.mediaElement && typeof clipToDelete.mediaElement.pause === 'function') {
+        clipToDelete.mediaElement.pause();
+        try { clipToDelete.mediaElement.currentTime = 0; } catch (_) {}
+      }
+
       state.clips = state.clips.filter(c => c.id !== state.selectedClipId);
       state.selectedClipId = null;
       recalcTotalDuration();
+      syncMediaElements(true);
       renderTimeline();
       renderInspector();
-      showToast('تم حذف العنصر');
+      renderFrame();
+      showToast('تم حذف العنصر وإيقاف صوته');
     }
 
     // --- PLAYBACK & MEDIA SYNC ---
@@ -3176,8 +3188,13 @@
           if (state.isExporting) {
             finishVideoExport();
           } else {
-            // Stop at the end of the timeline instead of looping back to zero.
+            // Stop every source at the exact end of the timeline. This also
+            // prevents a source video's embedded audio from continuing.
             state.isPlaying = false;
+            state.clips.forEach(clip => {
+              const media = clip.mediaElement;
+              if (media && typeof media.pause === 'function') media.pause();
+            });
             updatePlayPauseUI();
             syncMediaElements(false);
           }
