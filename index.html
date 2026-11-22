@@ -2493,26 +2493,37 @@
       container.innerHTML = html;
       const motionContent = document.getElementById('motionPanelContent');
       if (motionContent) motionContent.innerHTML = html;
+      applyMotionPanelMode();
+    }
+
+    let activeMotionPanelMode = null;
+
+    function applyMotionPanelMode() {
+      if (!activeMotionPanelMode) return;
+      const content = document.getElementById('motionPanelContent');
+      const title = document.getElementById('motionPanelTitle');
+      if (!content || !title) return;
+      const keyframesSection = content.querySelector('#keyframesPanelSection');
+      const maskSection = content.querySelector('#maskPanelSection');
+      if (activeMotionPanelMode === 'keyframes') {
+        if (maskSection) maskSection.remove();
+        title.innerHTML = '<i class="fa-solid fa-diamond ml-2"></i>أدوات Keyframes فقط';
+        title.className = 'font-extrabold text-sm text-purple-300';
+      } else if (activeMotionPanelMode === 'mask') {
+        if (keyframesSection) keyframesSection.remove();
+        title.innerHTML = '<i class="fa-solid fa-mask ml-2"></i>أدوات Mask فقط';
+        title.className = 'font-extrabold text-sm text-amber-300';
+      }
     }
 
     function openMotionToolPanel(mode) {
       const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
       if (!clip) return showToast('حدد صورة أو فيديو من المسار أولاً');
+      if (mode !== 'keyframes' && mode !== 'mask') return;
+      activeMotionPanelMode = mode;
       renderInspector();
       const modal = document.getElementById('motionPanelModal');
-      const content = document.getElementById('motionPanelContent');
-      const title = document.getElementById('motionPanelTitle');
-      const keyframesSection = content.querySelector('#keyframesPanelSection');
-      const maskSection = content.querySelector('#maskPanelSection');
-      if (mode === 'keyframes') {
-        if (maskSection) maskSection.remove();
-        title.innerHTML = '<i class="fa-solid fa-diamond ml-2"></i>أدوات Keyframes فقط';
-        title.className = 'font-extrabold text-sm text-purple-300';
-      } else {
-        if (keyframesSection) keyframesSection.remove();
-        title.innerHTML = '<i class="fa-solid fa-mask ml-2"></i>أدوات Mask فقط';
-        title.className = 'font-extrabold text-sm text-amber-300';
-      }
+      applyMotionPanelMode();
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
@@ -2520,6 +2531,7 @@
     function openMaskPanel() { openMotionToolPanel('mask'); }
 
     function closeMotionPanel() {
+      activeMotionPanelMode = null;
       const modal = document.getElementById('motionPanelModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
