@@ -349,6 +349,16 @@
 
   <!-- ==================== 3. BOTTOM MULTI-TRACK TIMELINE ==================== -->
   <footer class="h-[250px] md:h-[270px] bg-studio-panel border-t border-studio-border flex flex-col shrink-0 select-none z-20">
+    <!-- Always-visible motion tools (especially on mobile, where the inspector is hidden) -->
+    <div class="h-10 shrink-0 bg-[#191c24] border-b border-studio-border px-3 flex items-center gap-2">
+      <span class="text-[10px] text-gray-400 font-bold ml-1">أدوات المقطع</span>
+      <button type="button" onclick="openKeyframesPanel()" class="flex-1 max-w-[180px] py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold flex items-center justify-center gap-2" title="حدد فيديو أو صورة ثم افتح الكي فريم">
+        <i class="fa-solid fa-diamond"></i><span>Keyframes</span>
+      </button>
+      <button type="button" onclick="openMaskPanel()" class="flex-1 max-w-[180px] py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-extrabold flex items-center justify-center gap-2" title="حدد فيديو أو صورة ثم افتح الماسك">
+        <i class="fa-solid fa-mask"></i><span>Mask</span>
+      </button>
+    </div>
     <!-- Timeline Toolbar -->
     <div class="h-10 bg-[#14171d] border-b border-studio-border px-3 flex items-center justify-between gap-2 overflow-x-auto">
       <!-- Editing Actions -->
