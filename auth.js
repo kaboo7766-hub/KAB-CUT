@@ -86,7 +86,8 @@
       const access=await api("access");
       currentRole=access.role;
       unlock();
-      addDriveButton();
+      window.dispatchEvent(new CustomEvent("kab-auth-ready", { detail: { uid: user.uid, email: user.email || "" } }));
+      const driveButton = document.getElementById("kabDriveConnect"); if (driveButton) driveButton.remove();
       if(currentRole==="owner") {
         addAdminButton();
       } else {
@@ -197,7 +198,7 @@
   sdk.onload=()=>{
     const s=document.createElement("script");s.src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js";
     s.onload=()=>{
-      try{app=firebase.initializeApp(firebaseConfig);auth=firebase.auth();auth.onAuthStateChanged(user=>{if(user)enter(user);else{currentRole=null;const b=document.getElementById("kabAdminOpen");if(b)b.remove();lock();}});}
+      try{app=firebase.initializeApp(firebaseConfig);auth=firebase.auth();auth.onAuthStateChanged(user=>{if(user)enter(user);else{currentRole=null;window.dispatchEvent(new CustomEvent("kab-auth-signed-out"));const b=document.getElementById("kabAdminOpen");if(b)b.remove();const d=document.getElementById("kabDriveConnect");if(d)d.remove();lock();}});}
       catch(e){show("kabLoginView");msg("kabAuthMsg","تعذر تهيئة Firebase. تحقق من إعدادات المشروع.");}
     };s.onerror=()=>msg("kabAuthMsg","تعذر تحميل خدمة تسجيل الدخول.");document.head.appendChild(s);
   };sdk.onerror=()=>msg("kabAuthMsg","تعذر تحميل Firebase.");document.head.appendChild(sdk);
