@@ -363,8 +363,10 @@
         <div class="h-4 w-[1px] bg-studio-border mx-1"></div>
 
         <button onclick="splitSelectedClip()" class="px-3 py-1 rounded-lg bg-studio-surface hover:bg-studio-cyan hover:text-studio-bg text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-scissors"></i>
-          <span>تقسيم (Split)</span>
+          <i class="fa-solid fa-scissors"></i><span>تقسيم (Split)</span>
+        </button>
+        <button onclick="openMotionPanel()" class="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-diamond"></i><span>Keyframes & Mask</span>
         </button>
 
         <button onclick="duplicateSelectedClip()" class="px-2.5 py-1 rounded-lg bg-studio-surface hover:bg-studio-hover text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
@@ -459,6 +461,16 @@
       </div>
     </div>
   </footer>
+
+  <div id="motionPanelModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[60] p-3">
+    <div class="bg-studio-panel border border-purple-400/50 rounded-2xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl">
+      <div class="p-3 border-b border-studio-border flex items-center justify-between">
+        <div class="font-extrabold text-sm text-purple-300"><i class="fa-solid fa-diamond ml-2"></i>لوحة الحركة والماسك</div>
+        <button onclick="closeMotionPanel()" class="text-gray-300 text-xl px-2" aria-label="إغلاق">×</button>
+      </div>
+      <div id="motionPanelContent" class="p-3 overflow-y-auto space-y-3"></div>
+    </div>
+  </div>
 
   <!-- ==================== 4. EXPORT MODAL & TOAST NOTIFICATION ==================== -->
   <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
@@ -2393,12 +2405,32 @@
                 <input type="range" min="0.25" max="4" step="0.05" value="${clip.videoSpeed || 1}" oninput="setVideoSpeed(this.value)" class="w-full" />
                 <div class="grid grid-cols-4 gap-1">${[0.5,1,1.5,2].map(v=>`<button onclick="setVideoSpeed(${v})" class="text-[10px] py-1 rounded bg-studio-surface border border-studio-border">${v}x</button>`).join('')}</div>
               </div>
-              <div class="bg-studio-bg p-2 rounded-lg border border-purple-400/30 space-y-2">
-                <div class="text-xs font-bold text-purple-300">Keyframes — تحريك تلقائي</div>
-                <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ تسجيل كي فريم عند المؤشر</button>
-                <div class="text-[10px] text-gray-400">سجّل موقع/حجم/دوران/شفافية المقطع عند الوقت الحالي، ثم غيّر القيم وسجّل كي فريم آخر.</div>
-                <div class="text-[11px] text-cyan-300">عدد الكي فريم: ${(clip.keyframes || []).length}</div>
-                <button onclick="clearClipKeyframes()" class="w-full py-1 rounded bg-studio-surface border border-studio-border text-[10px]">مسح الكي فريمات</button>
+              <div class="bg-studio-bg p-3 rounded-lg border border-purple-400/40 space-y-2">
+                <div class="flex items-center justify-between"><div class="text-sm font-extrabold text-purple-300">◆ Keyframes</div><span class="text-[10px] text-cyan-300">${(clip.keyframes || []).length} نقطة</span></div>
+                <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ إضافة كي فريم عند مؤشر التشغيل</button>
+                <div class="text-[10px] text-gray-400">غيّر مكان الفيديو أو حجمه أو دورانه أو شفافيته، ثم أضف نقطة جديدة. سيتم إنشاء الحركة تلقائياً بين النقاط.</div>
+                <div class="max-h-32 overflow-y-auto space-y-1">
+                  ${(clip.keyframes || []).slice().sort((a,b)=>a.time-b.time).map((kf,i)=>`<div class="flex items-center gap-1 bg-studio-surface rounded px-2 py-1"><button onclick="seekTo(${clip.start + kf.time});renderInspector()" class="flex-1 text-right text-[10px] text-cyan-200">◆ ${(kf.time).toFixed(2)} ثانية — ${i+1}</button><button onclick="deleteClipKeyframe(${i})" class="text-red-400 px-2" title="حذف">×</button></div>`).join('') || '<div class="text-[10px] text-gray-500">لا توجد نقاط حركة بعد</div>'}
+                </div>
+                <button onclick="clearClipKeyframes()" class="w-full py-1.5 rounded bg-studio-surface border border-studio-border text-[10px]">مسح كل الكي فريمات</button>
+              </div>
+              <div class="bg-studio-bg p-3 rounded-lg border border-amber-400/40 space-y-2">
+                <div class="text-sm font-extrabold text-amber-300">Mask — قناع الفيديو</div>
+                <label class="flex items-center justify-between text-xs"><span>تفعيل الماسك</span><input type="checkbox" ${clip.maskEnabled ? 'checked' : ''} onchange="updateClipProp('maskEnabled', this.checked)" /></label>
+                <label class="block text-[10px] text-gray-400">شكل الماسك</label>
+                <select class="w-full bg-studio-surface border border-studio-border rounded px-2 py-2 text-xs" onchange="updateClipProp('maskShape', this.value)">
+                  <option value="rectangle" ${(clip.maskShape || 'rectangle')==='rectangle'?'selected':''}>مستطيل</option>
+                  <option value="circle" ${clip.maskShape==='circle'?'selected':''}>دائرة / بيضاوي</option>
+                </select>
+                <div class="text-[10px] text-gray-300">عرض الماسك: ${clip.maskWidth ?? 100}%</div>
+                <input type="range" min="5" max="100" value="${clip.maskWidth ?? 100}" oninput="updateClipProp('maskWidth', +this.value)" class="w-full"/>
+                <div class="text-[10px] text-gray-300">ارتفاع الماسك: ${clip.maskHeight ?? 100}%</div>
+                <input type="range" min="5" max="100" value="${clip.maskHeight ?? 100}" oninput="updateClipProp('maskHeight', +this.value)" class="w-full"/>
+                <div class="grid grid-cols-2 gap-2">
+                  <div><label class="text-[10px] text-gray-300">موضع X: ${clip.maskX ?? 0}</label><input type="range" min="-50" max="50" value="${clip.maskX ?? 0}" oninput="updateClipProp('maskX', +this.value)" class="w-full"/></div>
+                  <div><label class="text-[10px] text-gray-300">موضع Y: ${clip.maskY ?? 0}</label><input type="range" min="-50" max="50" value="${clip.maskY ?? 0}" oninput="updateClipProp('maskY', +this.value)" class="w-full"/></div>
+                </div>
+                <button onclick="updateClipProp('maskEnabled', false)" class="w-full py-1.5 rounded bg-studio-surface border border-studio-border text-[10px]">إيقاف الماسك</button>
               </div>
               ` : ''}
               ${clip.track === 'video' ? `
@@ -2444,6 +2476,20 @@
       }
 
       container.innerHTML = html;
+      const motionContent = document.getElementById('motionPanelContent');
+      if (motionContent) motionContent.innerHTML = html;
+    }
+
+    function openMotionPanel() {
+      const modal = document.getElementById('motionPanelModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      renderInspector();
+    }
+    function closeMotionPanel() {
+      const modal = document.getElementById('motionPanelModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
     function resetClipTransform() {
@@ -2600,6 +2646,16 @@
       showToast('تم مسح كي فريمات المقطع');
     }
 
+    function deleteClipKeyframe(index) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
+      if (!clip || !clip.keyframes) return;
+      const ordered = clip.keyframes.slice().sort((a,b)=>a.time-b.time);
+      ordered.splice(index, 1);
+      clip.keyframes = ordered;
+      saveHistory(); renderInspector(); renderTimeline(); renderFrame();
+      showToast('تم حذف نقطة الحركة');
+    }
+
     function getClipKeyframeValues(clip, localTime) {
       const frames = (clip.keyframes || []).slice().sort((a,b)=>a.time-b.time);
       if (!frames.length) return null;
@@ -2680,14 +2736,18 @@
 
         const clipIcon = clip.type === 'video' || clip.type === 'demo_scene' ? 'fa-film' : clip.type === 'image' ? 'fa-image' : clip.type === 'audio' ? 'fa-music' : 'fa-wand-magic-sparkles';
         const clipKind = clip.type === 'video' || clip.type === 'demo_scene' ? 'فيديو' : clip.type === 'image' ? 'صورة' : clip.type === 'audio' ? 'صوت' : 'مؤثر';
+        const keyframeDots = clip.track === 'video' ? (clip.keyframes || []).map(kf => {
+          const pct = Math.max(0, Math.min(100, (kf.time / Math.max(.01, clip.duration)) * 100));
+          return `<button type="button" title="كي فريم عند ${kf.time.toFixed(2)} ثانية" onclick="event.stopPropagation();seekTo(${clip.start + kf.time});renderFrame()" style="position:absolute;right:${pct}%;top:50%;transform:translate(50%,-50%) rotate(45deg);width:9px;height:9px;background:#fff;border:1px solid #a78bfa;z-index:25;padding:0" class="shadow"></button>`;
+        }).join('') : '';
         el.innerHTML = `
           <div class="clip-handle h-full bg-black/30 shrink-0" data-resize="start" data-id="${clip.id}" aria-label="تعديل بداية المقطع"></div>
           <div class="flex-1 min-w-0 px-2 flex items-center gap-1.5 truncate text-[10px] sm:text-[11px] font-bold text-white pointer-events-none">
-            <i class="fa-solid ${clipIcon} shrink-0"></i>
-            <span class="truncate">${clip.name}</span>
+            <i class="fa-solid ${clipIcon} shrink-0"></i><span class="truncate">${clip.name}</span>
             <span class="shrink-0 rounded bg-black/25 px-1 text-[9px]">${clipKind}</span>
           </div>
           <div class="clip-handle h-full bg-black/30 shrink-0" data-resize="end" data-id="${clip.id}" aria-label="تعديل نهاية المقطع"></div>
+          ${keyframeDots}
         `;
 
         el.onpointerdown = (e) => {
@@ -3087,6 +3147,16 @@
         offCtx.translate(W / 2 + (tr.x ?? clip.x ?? 0), H / 2 + (tr.y ?? clip.y ?? 0));
         offCtx.rotate(((tr.rotation ?? clip.rotation ?? 0) * Math.PI) / 180);
         offCtx.scale((tr.scale ?? clip.scale ?? 1) * (clip.flipH ? -1 : 1), (tr.scale ?? clip.scale ?? 1) * (clip.flipV ? -1 : 1));
+        if (clip.maskEnabled) {
+          const mw = W * ((clip.maskWidth ?? 100) / 100);
+          const mh = H * ((clip.maskHeight ?? 100) / 100);
+          const mx = W * ((clip.maskX ?? 0) / 100);
+          const my = H * ((clip.maskY ?? 0) / 100);
+          offCtx.beginPath();
+          if (clip.maskShape === 'circle') offCtx.ellipse(mx, my, Math.max(1,mw/2), Math.max(1,mh/2), 0, 0, Math.PI*2);
+          else offCtx.rect(mx-mw/2, my-mh/2, mw, mh);
+          offCtx.clip();
+        }
 
         if (clip.type === 'demo_scene') {
           drawProceduralDemoScene(offCtx, W, H, t - clip.start);
