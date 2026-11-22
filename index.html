@@ -3018,13 +3018,18 @@
         }
 
         if (state.currentTime >= state.duration) {
+          state.currentTime = state.duration;
           if (state.isExporting) {
             finishVideoExport();
           } else {
-            state.currentTime = 0;
+            // Stop at the end of the timeline instead of looping back to zero.
+            state.isPlaying = false;
+            updatePlayPauseUI();
+            syncMediaElements(false);
           }
+        } else {
+          syncMediaElements(false);
         }
-        syncMediaElements(false);
         updatePlayheadPosition();
       }
 
