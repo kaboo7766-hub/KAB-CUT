@@ -365,8 +365,11 @@
         <button onclick="splitSelectedClip()" class="px-3 py-1 rounded-lg bg-studio-surface hover:bg-studio-cyan hover:text-studio-bg text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-scissors"></i><span>تقسيم (Split)</span>
         </button>
-        <button onclick="openMotionPanel()" class="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0">
-          <i class="fa-solid fa-diamond"></i><span>Keyframes & Mask</span>
+        <button onclick="openKeyframesPanel()" class="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0" title="فتح أدوات الكي فريم فقط">
+          <i class="fa-solid fa-diamond"></i><span>Keyframes</span>
+        </button>
+        <button onclick="openMaskPanel()" class="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0" title="فتح أدوات الماسك فقط">
+          <i class="fa-solid fa-mask"></i><span>Mask</span>
         </button>
 
         <button onclick="duplicateSelectedClip()" class="px-2.5 py-1 rounded-lg bg-studio-surface hover:bg-studio-hover text-gray-200 text-xs font-bold flex items-center gap-1.5 transition">
@@ -465,7 +468,7 @@
   <div id="motionPanelModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-[60] p-3">
     <div class="bg-studio-panel border border-purple-400/50 rounded-2xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl">
       <div class="p-3 border-b border-studio-border flex items-center justify-between">
-        <div class="font-extrabold text-sm text-purple-300"><i class="fa-solid fa-diamond ml-2"></i>لوحة الحركة والماسك</div>
+        <div id="motionPanelTitle" class="font-extrabold text-sm text-purple-300"><i class="fa-solid fa-diamond ml-2"></i>أدوات الحركة</div>
         <button onclick="closeMotionPanel()" class="text-gray-300 text-xl px-2" aria-label="إغلاق">×</button>
       </div>
       <div id="motionPanelContent" class="p-3 overflow-y-auto space-y-3"></div>
@@ -2407,7 +2410,7 @@
               </div>
               ` : ''}
               ${clip.track === 'video' ? `
-              <div class="bg-studio-bg p-3 rounded-lg border border-purple-400/40 space-y-2">
+              <div id="keyframesPanelSection" class="bg-studio-bg p-3 rounded-lg border border-purple-400/40 space-y-2">
                 <div class="flex items-center justify-between"><div class="text-sm font-extrabold text-purple-300">◆ Keyframes</div><span class="text-[10px] text-cyan-300">${(clip.keyframes || []).length} نقطة</span></div>
                 <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ إضافة كي فريم عند مؤشر التشغيل</button>
                 <div class="text-[10px] text-gray-400">غيّر مكان الفيديو أو حجمه أو دورانه أو شفافيته، ثم أضف نقطة جديدة. سيتم إنشاء الحركة تلقائياً بين النقاط.</div>
@@ -2418,7 +2421,7 @@
               </div>
               ` : ''}
               ${clip.track === 'video' ? `
-              <div class="bg-studio-bg p-3 rounded-lg border border-amber-400/40 space-y-2">
+              <div id="maskPanelSection" class="bg-studio-bg p-3 rounded-lg border border-amber-400/40 space-y-2">
                 <div class="text-sm font-extrabold text-amber-300">Mask — قناع الفيديو</div>
                 <label class="flex items-center justify-between text-xs"><span>تفعيل الماسك</span><input type="checkbox" ${clip.maskEnabled ? 'checked' : ''} onchange="updateClipProp('maskEnabled', this.checked)" /></label>
                 <label class="block text-[10px] text-gray-400">شكل الماسك</label>
@@ -2484,12 +2487,30 @@
       if (motionContent) motionContent.innerHTML = html;
     }
 
-    function openMotionPanel() {
+    function openMotionToolPanel(mode) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
+      if (!clip) return showToast('حدد صورة أو فيديو من المسار أولاً');
+      renderInspector();
       const modal = document.getElementById('motionPanelModal');
+      const content = document.getElementById('motionPanelContent');
+      const title = document.getElementById('motionPanelTitle');
+      const keyframesSection = content.querySelector('#keyframesPanelSection');
+      const maskSection = content.querySelector('#maskPanelSection');
+      if (mode === 'keyframes') {
+        if (maskSection) maskSection.remove();
+        title.innerHTML = '<i class="fa-solid fa-diamond ml-2"></i>أدوات Keyframes فقط';
+        title.className = 'font-extrabold text-sm text-purple-300';
+      } else {
+        if (keyframesSection) keyframesSection.remove();
+        title.innerHTML = '<i class="fa-solid fa-mask ml-2"></i>أدوات Mask فقط';
+        title.className = 'font-extrabold text-sm text-amber-300';
+      }
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      renderInspector();
     }
+    function openKeyframesPanel() { openMotionToolPanel('keyframes'); }
+    function openMaskPanel() { openMotionToolPanel('mask'); }
+
     function closeMotionPanel() {
       const modal = document.getElementById('motionPanelModal');
       modal.classList.add('hidden');
