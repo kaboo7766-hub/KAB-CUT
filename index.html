@@ -376,6 +376,12 @@
           <i class="fa-regular fa-trash-can"></i>
           <span class="hidden sm:inline">حذف</span>
         </button>
+
+        <label class="cursor-pointer px-3 py-1 rounded-lg bg-studio-cyan hover:bg-cyan-300 text-studio-bg text-xs font-extrabold flex items-center gap-1.5 transition shadow-md shrink-0" title="ارفع فيديو أو صورة أو صوت من جهازك في أي وقت">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>رفع من الجهاز</span>
+          <input type="file" accept="video/*,image/*,audio/*" multiple class="hidden" onchange="handleMediaUpload(event)" />
+        </label>
       </div>
 
       <!-- Snap & Zoom Controls -->
@@ -1349,7 +1355,12 @@
     function addMediaClipToTimeline(mediaItem) {
       saveHistory();
       const videoClips = state.clips.filter(c => c.track === 'video');
-      const start = videoClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+      // Images are placed at the playhead so they can be layered over the current video.
+      // Videos continue to append after the last video clip to preserve the normal edit flow.
+      const isImageOverlay = mediaItem.type === 'image';
+      const start = isImageOverlay
+        ? Math.max(0, state.currentTime)
+        : videoClips.reduce((max, c) => Math.max(max, c.start + c.duration), 0);
 
       const newClip = {
         id: 'clip_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -1374,7 +1385,9 @@
       recalcTotalDuration();
       selectClip(newClip.id);
       renderTimeline();
-      showToast(`تمت إضافة "${mediaItem.name}" إلى الخط الزمني`);
+      showToast(isImageOverlay
+        ? `تمت إضافة الصورة كطبقة فوق الفيديو عند موضع التشغيل: "${mediaItem.name}"`
+        : `تمت إضافة "${mediaItem.name}" إلى الخط الزمني`);
     }
 
     function addAudioClipToTimeline(mediaItem) {
