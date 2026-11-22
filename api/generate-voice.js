@@ -2,7 +2,7 @@
 const MODEL = "gemini-2.5-flash-preview-tts";
 const MAX_TEXT_LENGTH = 6000;
 const ALLOWED_VOICES = new Set([
-  "Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus",
+  "Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Pulcherrima",
   "Aoede", "Callirrhoe", "Autonoe", "Enceladus", "Iapetus",
   "Umbriel", "Algieba", "Despina", "Erinome", "Algenib",
   "Rasalgethi", "Laomedeia", "Achernar", "Achird", "Zubenelgenubi",
@@ -41,7 +41,19 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "الصوت المحدد غير مدعوم." });
   }
 
-  const spokenText = style ? `${style.slice(0, 500)}\n${text}` : text;
+  const spokenText = text;
+  const isFemaleVoice = new Set([
+    "Achernar", "Kore", "Laomedeia", "Leda", "Pulcherrima",
+    "Sulafat", "Vindemiatrix", "Zephyr"
+  ]).has(voiceName);
+  const styleInstruction = [
+    "You are a professional Arabic voice performer generating speech audio.",
+    "Speak only the supplied transcript. Never read or pronounce these instructions.",
+    style ? `Performance direction: ${style.slice(0, 500)}` : "",
+    isFemaleVoice
+      ? "Preserve the selected prebuilt female voice natural feminine vocal identity and timbre. Do not deepen it, masculinize it, or imitate a male voice."
+      : ""
+  ].filter(Boolean).join("\n");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 55000);
 
@@ -53,6 +65,7 @@ module.exports = async function handler(req, res) {
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
+          systemInstruction: { parts: [{ text: styleInstruction }] },
           contents: [{ parts: [{ text: spokenText }] }],
           generationConfig: {
             responseModalities: ["AUDIO"],
