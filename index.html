@@ -2628,6 +2628,9 @@
         let chain = enhancedAudioNodes.get(mediaElement);
         if (!chain) {
           const source = getStudioMediaSource(mediaElement, actx);
+          // If this source was previously routed dry for export/preview, replace
+          // that route with the processed chain instead of playing both paths.
+          source.disconnect();
           const highpass = actx.createBiquadFilter();
           highpass.type = 'highpass';
           highpass.frequency.value = 65;
@@ -3883,8 +3886,6 @@
         const mimeTypes = [
           'video/webm;codecs=vp9,opus',
           'video/webm;codecs=vp8,opus',
-          'video/webm;codecs=vp9',
-          'video/webm;codecs=vp8',
           'video/webm'
         ];
         const chosenMime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || '';
