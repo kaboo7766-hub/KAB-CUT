@@ -2405,6 +2405,8 @@
                 <input type="range" min="0.25" max="4" step="0.05" value="${clip.videoSpeed || 1}" oninput="setVideoSpeed(this.value)" class="w-full" />
                 <div class="grid grid-cols-4 gap-1">${[0.5,1,1.5,2].map(v=>`<button onclick="setVideoSpeed(${v})" class="text-[10px] py-1 rounded bg-studio-surface border border-studio-border">${v}x</button>`).join('')}</div>
               </div>
+              ` : ''}`
+              ${clip.track === 'video' ? `
               <div class="bg-studio-bg p-3 rounded-lg border border-purple-400/40 space-y-2">
                 <div class="flex items-center justify-between"><div class="text-sm font-extrabold text-purple-300">◆ Keyframes</div><span class="text-[10px] text-cyan-300">${(clip.keyframes || []).length} نقطة</span></div>
                 <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ إضافة كي فريم عند مؤشر التشغيل</button>
@@ -2414,6 +2416,8 @@
                 </div>
                 <button onclick="clearClipKeyframes()" class="w-full py-1.5 rounded bg-studio-surface border border-studio-border text-[10px]">مسح كل الكي فريمات</button>
               </div>
+              ` : ''}`
+              ${clip.track === 'video' ? `
               <div class="bg-studio-bg p-3 rounded-lg border border-amber-400/40 space-y-2">
                 <div class="text-sm font-extrabold text-amber-300">Mask — قناع الفيديو</div>
                 <label class="flex items-center justify-between text-xs"><span>تفعيل الماسك</span><input type="checkbox" ${clip.maskEnabled ? 'checked' : ''} onchange="updateClipProp('maskEnabled', this.checked)" /></label>
@@ -2494,17 +2498,15 @@
 
     function resetClipTransform() {
       const clip = state.clips.find(c => c.id === state.selectedClipId);
-      if (!clip) return;
+      if (!clip) return showToast('حدد طبقة أولاً');
+      saveHistory();
       clip.scale = 1;
       clip.rotation = 0;
-      if (clip.track === 'video') {
-        clip.x = 0;
-        clip.y = 0;
-      } else {
-        clip.x = 0.5;
-        clip.y = 0.5;
-      }
+      clip.x = 0;
+      clip.y = 0;
+      renderFrame();
       renderInspector();
+      renderTimeline();
       showToast('تمت إعادة ضبط الحجم والموقع');
     }
 
@@ -2657,21 +2659,31 @@
 
     function addClipKeyframe() {
       const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
-      if (!clip) return showToast('حدد فيديو أولاً');
+      if (!clip) return showToast('حدد صورة أو فيديو من المسار أولاً');
+      const localTime = state.currentTime - clip.start;
+      if (localTime < 0 || localTime > clip.duration) return showToast('حرّك مؤشر التشغيل داخل مدة الصورة أو الفيديو أولاً');
       if (!clip.keyframes) clip.keyframes = [];
-      const kf = { time: Math.max(0, state.currentTime - clip.start), x: clip.x || 0, y: clip.y || 0, scale: clip.scale || 1, rotation: clip.rotation || 0, opacity: clip.opacity ?? 1 };
+      const kf = {
+        time: Math.max(0, Math.min(clip.duration, localTime)),
+        x: Number(clip.x) || 0, y: Number(clip.y) || 0,
+        scale: Number(clip.scale) || 1,
+        rotation: Number(clip.rotation) || 0,
+        opacity: clip.opacity ?? 1
+      };
       const existing = clip.keyframes.findIndex(k => Math.abs(k.time - kf.time) < 0.05);
+      saveHistory();
       if (existing >= 0) clip.keyframes[existing] = kf; else clip.keyframes.push(kf);
       clip.keyframes.sort((a,b)=>a.time-b.time);
-      saveHistory(); renderInspector(); renderTimeline();
-      showToast('تم تسجيل الكي فريم عند ' + kf.time.toFixed(2) + ' ثانية');
+      renderFrame(); renderInspector(); renderTimeline();
+      showToast('تم تسجيل نقطة الحركة عند ' + kf.time.toFixed(2) + ' ثانية');
     }
 
     function clearClipKeyframes() {
       const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
       if (!clip) return;
+      saveHistory();
       clip.keyframes = [];
-      saveHistory(); renderInspector(); renderTimeline();
+      renderFrame(); renderInspector(); renderTimeline();
       showToast('تم مسح كي فريمات المقطع');
     }
 
@@ -2679,9 +2691,11 @@
       const clip = state.clips.find(c => c.id === state.selectedClipId && c.track === 'video');
       if (!clip || !clip.keyframes) return;
       const ordered = clip.keyframes.slice().sort((a,b)=>a.time-b.time);
+      if (index < 0 || index >= ordered.length) return;
+      saveHistory();
       ordered.splice(index, 1);
       clip.keyframes = ordered;
-      saveHistory(); renderInspector(); renderTimeline(); renderFrame();
+      renderInspector(); renderTimeline(); renderFrame();
       showToast('تم حذف نقطة الحركة');
     }
 
