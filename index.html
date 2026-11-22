@@ -2519,21 +2519,29 @@
       renderInspector();
     }
 
-    // --- WEB AUDIO STUDIO VOICE BEAUTIFIER & TONE ENHANCER ---
+    // --- NON-BYPASSABLE WEB AUDIO TONE ENGINE ---
+    // A media element is routed through this graph only; there is no dry/original
+    // connection to the speakers. If processing cannot be initialized, mute the
+    // element rather than leaking the untreated source audio.
     const enhancedAudioNodes = new WeakMap();
 
     function applyStudioAudioDSP(mediaElement, profile) {
-      if (!mediaElement || typeof mediaElement.play !== 'function') return;
+      if (!mediaElement || typeof mediaElement.play !== 'function') return false;
       try {
-        if (!window._studioAudioCtx) {
-          window._studioAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) throw new Error('Web Audio is not supported');
+        if (!window._studioAudioCtx) window._studioAudioCtx = new AudioContextClass();
         const actx = window._studioAudioCtx;
         if (actx.state === 'suspended') actx.resume();
 
         let chain = enhancedAudioNodes.get(mediaElement);
         if (!chain) {
           const source = actx.createMediaElementSource(mediaElement);
+          const highpass = actx.createBiquadFilter();
+          highpass.type = 'highpass';
+          highpass.frequency.value = 65;
+          highpass.Q.value = 0.7;
+
           const bassFilter = actx.createBiquadFilter();
           bassFilter.type = 'lowshelf';
           bassFilter.frequency.value = 140;
@@ -2543,36 +2551,53 @@
           presenceFilter.frequency.value = 3200;
           presenceFilter.Q.value = 1.1;
 
-          const compressor = actx.createDynamicsCompressor();
-          compressor.threshold.value = -24;
-          compressor.knee.value = 18;
-          compressor.ratio.value = 5;
-          compressor.attack.value = 0.005;
-          compressor.release.value = 0.2;
+          const airFilter = actx.createBiquadFilter();
+          airFilter.type = 'highshelf';
+          airFilter.frequency.value = 8500;
 
-          const delay = actx.createDelay();
+          const compressor = actx.createDynamicsCompressor();
+          compressor.threshold.value = -26;
+          compressor.knee.value = 16;
+          compressor.ratio.value = 6;
+          compressor.attack.value = 0.004;
+          compressor.release.value = 0.22;
+
+          const output = actx.createGain();
+          output.gain.value = 1;
+          source.connect(highpass);
+          highpass.connect(bassFilter);
+          bassFilter.connect(presenceFilter);
+          presenceFilter.connect(airFilter);
+          airFilter.connect(compressor);
+          compressor.connect(output);
+          output.connect(actx.destination);
+
+          const delay = actx.createDelay(0.5);
           delay.delayTime.value = 0.09;
           const echoGain = actx.createGain();
           echoGain.gain.value = 0;
-
-          source.connect(bassFilter);
-          bassFilter.connect(presenceFilter);
-          presenceFilter.connect(compressor);
-          compressor.connect(actx.destination);
-
           compressor.connect(delay);
           delay.connect(echoGain);
           echoGain.connect(actx.destination);
 
-          chain = { bassFilter, presenceFilter, echoGain };
+          chain = { highpass, bassFilter, presenceFilter, airFilter, compressor, output, echoGain };
           enhancedAudioNodes.set(mediaElement, chain);
         }
 
-        chain.bassFilter.gain.value = profile.bassGain ?? 8;
-        chain.presenceFilter.gain.value = profile.presenceGain ?? 7;
-        chain.echoGain.gain.value = profile.echoMix ?? 0.12;
+        chain.bassFilter.gain.setTargetAtTime(profile.bassGain ?? 8, actx.currentTime, 0.025);
+        chain.presenceFilter.gain.setTargetAtTime(profile.presenceGain ?? 7, actx.currentTime, 0.025);
+        chain.airFilter.gain.setTargetAtTime(profile.airGain ?? 2, actx.currentTime, 0.025);
+        chain.echoGain.gain.setTargetAtTime(profile.echoMix ?? 0.08, actx.currentTime, 0.025);
+        chain.output.gain.setTargetAtTime(profile.outputGain ?? 1, actx.currentTime, 0.025);
+
+        mediaElement.muted = false;
+        mediaElement.dataset.kabToneApplied = 'true';
+        return true;
       } catch (e) {
-        // Fallback smoothly if CORS or element already routed
+        mediaElement.muted = true;
+        mediaElement.dataset.kabToneApplied = 'failed';
+        console.error('KAB CUT tone processing failed:', e);
+        return false;
       }
     }
 
@@ -2591,25 +2616,29 @@
       state.selectedVoiceId = profile.id;
 
       let clip = state.clips.find(c => c.id === state.selectedClipId && (c.type === 'audio' || c.type === 'video'));
-      if (!clip) {
-        clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
-      }
+      if (!clip) clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
       if (!clip) {
         switchTab('audio');
-        return showToast(`تم اختيار "${profile.name}" - سجّل صوتك أو اكتب نصاً لتوليده!`);
+        return showToast(`تم اختيار "${profile.name}" - أضف مقطعاً صوتياً أولاً لتطبيق التون!`);
       }
 
       selectClip(clip.id);
-      clip.pitchRate = profile.pitch;
+      clip.pitchRate = profile.pitch || 1;
       clip.voiceProfile = profile;
+      clip.toneApplied = true;
+      let applied = true;
       if (clip.mediaElement) {
         clip.mediaElement.preservesPitch = false;
-        clip.mediaElement.playbackRate = profile.pitch;
-        applyStudioAudioDSP(clip.mediaElement, profile);
+        clip.mediaElement.playbackRate = profile.pitch || 1;
+        applied = applyStudioAudioDSP(clip.mediaElement, profile);
       }
+      saveHistory();
+      syncMediaElements(false);
       switchTab('audio');
       renderInspector();
-      showToast(`✨ تم تحسين الصوت وتطبيق تون "${profile.name.split('(')[0].trim()}" بنجاح!`);
+      showToast(applied
+        ? `تم فرض تون "${profile.name.split('(')[0].trim()}" على المقطع بالكامل، والصوت الأصلي غير موصول مباشرة.`
+        : 'تعذر تشغيل محرك التون في هذا المتصفح؛ تم كتم المصدر الأصلي لمنع تسرب الصوت القديم.');
     }
 
     function setVideoSpeed(value) {
@@ -3839,27 +3868,32 @@
     }
 
     function applyVoiceTonePreset(preset) {
+      const presets = {
+        luxury_deep: { id: 'kab_luxury_deep', name: 'فخم عميق', pitch: 0.82, bassGain: 12, presenceGain: 5, airGain: 1, echoMix: 0.08 },
+        female_soft: { id: 'kab_female_soft', name: 'ناعم مرتفع', pitch: 1.24, bassGain: 3, presenceGain: 8, airGain: 4, echoMix: 0.05 },
+        studio_echo: { id: 'kab_studio_echo', name: 'استوديو بصدى', pitch: 0.92, bassGain: 8, presenceGain: 8, airGain: 3, echoMix: 0.24 },
+        natural: { id: 'kab_natural', name: 'طبيعي محسّن', pitch: 1, bassGain: 5, presenceGain: 7, airGain: 2, echoMix: 0 }
+      };
+      const profile = presets[preset] || presets.natural;
       let clip = state.clips.find(c => c.id === state.selectedClipId && (c.type === 'audio' || c.type === 'video'));
-      if (!clip) {
-        clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
-      }
-      if (!clip) return showToast('سجّل صوتاً أو أضف مقطعاً صوتياً أولاً لتغيير التون');
+      if (!clip) clip = [...state.clips].reverse().find(c => c.type === 'audio' || c.type === 'video');
+      if (!clip) return showToast('حدد مقطع فيديو أو صوت أولاً لتغيير التون');
 
       selectClip(clip.id);
-      if (preset === 'luxury_deep') {
-        updateClipPitch(0.82);
-        showToast('تم تحويل التون إلى صوت فخم رخيم عميق');
-      } else if (preset === 'female_soft') {
-        updateClipPitch(1.24);
-        showToast('تم تحويل التون إلى نبرة أنثوية ناعمة');
-      } else if (preset === 'studio_echo') {
-        updateClipPitch(0.92);
-        clip.volume = 1.0;
-        showToast('تم تطبيق تون استوديو فخم');
-      } else {
-        updateClipPitch(1.0);
-        showToast('تمت إعادة الصوت للتون الطبيعي');
+      clip.pitchRate = profile.pitch;
+      clip.voiceProfile = profile;
+      clip.toneApplied = true;
+      if (clip.mediaElement) {
+        clip.mediaElement.preservesPitch = false;
+        clip.mediaElement.playbackRate = profile.pitch;
       }
+      const applied = clip.mediaElement ? applyStudioAudioDSP(clip.mediaElement, profile) : false;
+      saveHistory();
+      syncMediaElements(false);
+      renderInspector();
+      showToast(applied
+        ? `تم تطبيق تون "${profile.name}" على كامل المقطع وإلغاء مسار الصوت الجاف.`
+        : 'تعذر تفعيل معالجة الصوت؛ تم كتم المصدر الأصلي لمنع سماعه دون التون.');
     }
 
     function addTrendSfx(sfxId) {
