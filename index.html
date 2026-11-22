@@ -797,7 +797,8 @@
             "family": "Baloo Bhaijaan 2",
             "label": "بالو"
       },
-      {            "family": "Kufam",
+      {
+            "family": "Kufam",
             "label": "كوفام"
       },
       {
@@ -1596,7 +1597,8 @@
                   </div>
                 `).join('')}
               </div>
-              ${state.mediaPool.length === 0 ? `<p class="text-[11px] text-gray-500 text-center py-6">لا توجد ملفات مرفوعة بعد. اضغط على "استيراد من جهازك" أو اختر من مكتبة الفيديوهات والصور الجاهزة.</p>` : ''}            `}
+              ${state.mediaPool.length === 0 ? `<p class="text-[11px] text-gray-500 text-center py-6">لا توجد ملفات مرفوعة بعد. اضغط على "استيراد من جهازك" أو اختر من مكتبة الفيديوهات والصور الجاهزة.</p>` : ''}
+            `}
           </div>
         `;
       } else if (tabId === 'background') {
@@ -2395,7 +2397,8 @@
                 <div class="text-xs font-bold text-purple-300">Keyframes — تحريك تلقائي</div>
                 <button onclick="addClipKeyframe()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">+ تسجيل كي فريم عند المؤشر</button>
                 <div class="text-[10px] text-gray-400">سجّل موقع/حجم/دوران/شفافية المقطع عند الوقت الحالي، ثم غيّر القيم وسجّل كي فريم آخر.</div>
-                <div class="text-[11px] text-cyan-300">عدد الكي فريم: ${(clip.keyframes || []).length}</div>                <button onclick="clearClipKeyframes()" class="w-full py-1 rounded bg-studio-surface border border-studio-border text-[10px]">مسح الكي فريمات</button>
+                <div class="text-[11px] text-cyan-300">عدد الكي فريم: ${(clip.keyframes || []).length}</div>
+                <button onclick="clearClipKeyframes()" class="w-full py-1 rounded bg-studio-surface border border-studio-border text-[10px]">مسح الكي فريمات</button>
               </div>
               ` : ''}
               ${clip.track === 'video' ? `
@@ -3199,7 +3202,8 @@
           offCtx.strokeStyle = '#00e5ff';
           offCtx.lineWidth = Math.max(2, Math.round(W / 450));
           offCtx.setLineDash([10, 6]);
-          if (sel.track === 'video') {            const boxW = W * 0.65 * (sel.scale || 1);
+          if (sel.track === 'video') {
+            const boxW = W * 0.65 * (sel.scale || 1);
             const boxH = H * 0.65 * (sel.scale || 1);
             offCtx.translate(W / 2 + (sel.x || 0), H / 2 + (sel.y || 0));
             offCtx.rotate(((sel.rotation || 0) * Math.PI) / 180);
