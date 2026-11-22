@@ -2405,7 +2405,7 @@
                 <input type="range" min="0.25" max="4" step="0.05" value="${clip.videoSpeed || 1}" oninput="setVideoSpeed(this.value)" class="w-full" />
                 <div class="grid grid-cols-4 gap-1">${[0.5,1,1.5,2].map(v=>`<button onclick="setVideoSpeed(${v})" class="text-[10px] py-1 rounded bg-studio-surface border border-studio-border">${v}x</button>`).join('')}</div>
               </div>
-              ` : ''}`
+              ` : ''}
               ${clip.track === 'video' ? `
               <div class="bg-studio-bg p-3 rounded-lg border border-purple-400/40 space-y-2">
                 <div class="flex items-center justify-between"><div class="text-sm font-extrabold text-purple-300">◆ Keyframes</div><span class="text-[10px] text-cyan-300">${(clip.keyframes || []).length} نقطة</span></div>
@@ -2416,7 +2416,7 @@
                 </div>
                 <button onclick="clearClipKeyframes()" class="w-full py-1.5 rounded bg-studio-surface border border-studio-border text-[10px]">مسح كل الكي فريمات</button>
               </div>
-              ` : ''}`
+              ` : ''}
               ${clip.track === 'video' ? `
               <div class="bg-studio-bg p-3 rounded-lg border border-amber-400/40 space-y-2">
                 <div class="text-sm font-extrabold text-amber-300">Mask — قناع الفيديو</div>
