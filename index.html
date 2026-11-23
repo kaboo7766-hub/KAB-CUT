@@ -2372,8 +2372,15 @@
                 <span>التكبير / التصغير (Zoom)</span>
                 <span class="font-mono text-studio-cyan">${Math.round((clip.scale || 1) * 100)}%</span>
               </div>
-              <input type="range" min="0.15" max="3.5" step="0.05" value="${clip.scale || 1}"
-                oninput="updateClipProp('scale', parseFloat(this.value))" class="w-full" />
+              <input type="range" min="0.15" max="3.5" step="0.01" value="${clip.scale || 1}"
+                oninput="updateClipProp('scale', parseFloat(this.value)); const out=document.getElementById('transformScaleValue'); if(out) out.textContent=Math.round(parseFloat(this.value)*100)+'%';" class="w-full" />
+              <div class="flex items-center gap-2 mt-2">
+                <button type="button" onclick="stepSelectedScale(-0.05)" class="flex-1 py-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-studio-border text-sm font-bold" aria-label="تصغير العنصر">− تصغير</button>
+                <input id="transformScaleValue" type="number" min="15" max="350" step="1" value="${Math.round((clip.scale || 1) * 100)}"
+                  onchange="setSelectedScalePercent(this.value)" class="w-20 bg-studio-bg border border-studio-border rounded-lg px-2 py-2 text-center text-xs font-mono text-studio-cyan" aria-label="نسبة حجم العنصر بالمئة" />
+                <button type="button" onclick="stepSelectedScale(0.05)" class="flex-1 py-2 rounded-lg bg-studio-bg hover:bg-studio-hover border border-studio-border text-sm font-bold" aria-label="تكبير العنصر">+ تكبير</button>
+              </div>
+              <div class="text-[10px] text-gray-500">اسحب بإصبعين للتكبير والتصغير مباشرة على شاشة العرض. النسبة موحّدة وتحافظ على تناسب الأبعاد.</div>
               <div class="grid grid-cols-4 gap-1 mt-1.5">
                 <button onclick="updateClipProp('scale', 0.5)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">50%</button>
                 <button onclick="updateClipProp('scale', 1.0)" class="py-1 rounded bg-studio-bg hover:bg-studio-hover border border-studio-border text-[10px] font-mono">100%</button>
@@ -2545,6 +2552,26 @@
       const modal = document.getElementById('motionPanelModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+    }
+
+    function setSelectedScalePercent(value) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip || !['video', 'overlays'].includes(clip.track)) return;
+      const percent = Number(value);
+      if (!Number.isFinite(percent)) return;
+      saveHistory();
+      clip.scale = Math.max(0.15, Math.min(3.5, percent / 100));
+      renderInspector();
+      renderFrame();
+    }
+
+    function stepSelectedScale(delta) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId);
+      if (!clip || !['video', 'overlays'].includes(clip.track)) return;
+      saveHistory();
+      clip.scale = Math.max(0.15, Math.min(3.5, (Number(clip.scale) || 1) + delta));
+      renderInspector();
+      renderFrame();
     }
 
     function resetClipTransform() {
