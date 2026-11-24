@@ -1181,6 +1181,18 @@
       { id: 'eerie_chimes', name: 'أجراس غامضة', icon: 'fa-bell', color: 'text-fuchsia-300', dur: 4.0 },
       { id: 'dark_riser', name: 'تصاعد رعب قبل المفاجأة', icon: 'fa-arrow-trend-up', color: 'text-purple-300', dur: 4.0 },
       { id: 'underwater_dread', name: 'صدى أعماق مخيف', icon: 'fa-water', color: 'text-cyan-300', dur: 5.0 },
+      { id: 'horror_breath', name: 'أنفاس مرعبة قريبة', icon: 'fa-lungs', color: 'text-sky-200', dur: 6.0 },
+      { id: 'monster_growl', name: 'زمجرة وحش عميقة', icon: 'fa-dragon', color: 'text-red-300', dur: 4.8 },
+      { id: 'distant_scream', name: 'صرخة بعيدة شبحية', icon: 'fa-face-grimace', color: 'text-fuchsia-300', dur: 4.5 },
+      { id: 'thunder_storm', name: 'رعد وعاصفة مخيفة', icon: 'fa-cloud-bolt', color: 'text-indigo-300', dur: 7.0 },
+      { id: 'haunted_footsteps', name: 'خطوات في ممر مهجور', icon: 'fa-shoe-prints', color: 'text-amber-200', dur: 5.5 },
+      { id: 'chain_drag', name: 'سلاسل حديد تُسحب', icon: 'fa-link', color: 'text-slate-300', dur: 4.2 },
+      { id: 'door_slam', name: 'باب ثقيل يُغلق بعنف', icon: 'fa-door-closed', color: 'text-orange-300', dur: 3.0 },
+      { id: 'radio_ghost', name: 'همسات عبر راديو مشوش', icon: 'fa-radio', color: 'text-green-300', dur: 6.0 },
+      { id: 'cave_drips', name: 'قطرات ماء في كهف', icon: 'fa-droplet', color: 'text-cyan-200', dur: 6.0 },
+      { id: 'reverse_terror', name: 'سحب عكسي قبل الفزع', icon: 'fa-arrow-up-wide-short', color: 'text-violet-300', dur: 5.0 },
+      { id: 'floor_creak', name: 'أرضية خشب تئن', icon: 'fa-house', color: 'text-yellow-200', dur: 4.0 },
+      { id: 'eerie_howl', name: 'عواء مخيف في الضباب', icon: 'fa-wolf-pack-battalion', color: 'text-blue-200', dur: 6.5 },
     ];
 
     // --- ARABIC DIALECT & VOICE PERSONAS FOR AI DUBBING / TTS ---
@@ -4175,8 +4187,8 @@
             for (let i = 0; i < left.length; i += 1152) {
               const l = left.subarray(i, i + 1152);
               const r = right ? right.subarray(i, i + 1152) : l;
-              const encoded = encoder.encodeBuffer(l, r);
-              if (encoded.length) chunks.push(new Int8Array(encoded));
+              const encoded = channels > 1 ? encoder.encodeBuffer(l, r) : encoder.encodeBuffer(l);
+              if (encoded && encoded.length) chunks.push(new Int8Array(encoded));
             }
             const end = encoder.flush();
             if (end.length) chunks.push(new Int8Array(end));
@@ -4464,6 +4476,80 @@
           sample = (deep * 0.72 + bubbles * 0.18) * (0.65 + 0.35 * Math.sin(2 * Math.PI * 0.2 * t)) * 0.72;
         }
 
+        } else if (sfxId === 'horror_breath') {
+          const phase = (t % 2.8) / 2.8;
+          const inhale = phase < 0.48 ? Math.sin(Math.PI * phase / 0.48) : 0;
+          const exhale = phase >= 0.48 ? Math.sin(Math.PI * (phase - 0.48) / 0.52) : 0;
+          const envelope = inhale * 0.72 + exhale * 0.48;
+          const breathNoise = (Math.random() * 2 - 1) * (0.45 + 0.55 * Math.sin(2 * Math.PI * 900 * t));
+          const throat = Math.sin(2 * Math.PI * (115 + 9 * Math.sin(2 * Math.PI * 0.7 * t)) * t) * 0.12;
+          sample = (breathNoise * 0.72 + throat) * envelope * (0.7 + 0.3 * Math.sin(2 * Math.PI * 0.17 * t));
+        } else if (sfxId === 'monster_growl') {
+          const env = Math.min(1, p * 5) * Math.pow(1 - p, 0.65);
+          const pitch = 54 + 24 * Math.sin(2 * Math.PI * 0.42 * t) + 8 * Math.sin(2 * Math.PI * 2.1 * t);
+          const throat = Math.sin(2 * Math.PI * pitch * t) + 0.38 * Math.sin(2 * Math.PI * pitch * 2.7 * t);
+          const grit = (Math.random() * 2 - 1) * 0.28;
+          sample = (throat * 0.58 + grit) * env * 0.72;
+        } else if (sfxId === 'distant_scream') {
+          const env = Math.pow(Math.sin(Math.PI * p), 1.1);
+          const pitch = 520 - 280 * p + 55 * Math.sin(2 * Math.PI * 5.5 * t);
+          const formants = Math.sin(2 * Math.PI * pitch * t) * 0.55 +
+            Math.sin(2 * Math.PI * (pitch * 1.48) * t) * 0.25 +
+            Math.sin(2 * Math.PI * (pitch * 2.05) * t) * 0.12;
+          sample = formants * env * 0.46;
+        } else if (sfxId === 'thunder_storm') {
+          const crack = (Math.random() * 2 - 1) * Math.exp(-Math.pow((p - 0.28) * 34, 2));
+          const rumble = Math.sin(2 * Math.PI * (38 + 11 * Math.sin(2 * Math.PI * 0.16 * t)) * t) *
+            (0.45 + 0.55 * Math.exp(-Math.max(0, p - 0.25) * 2.4));
+          sample = (crack * 0.62 + rumble * 0.65) * Math.min(1, p * 8) * Math.min(1, (1 - p) * 3) * 0.82;
+        } else if (sfxId === 'haunted_footsteps') {
+          const beatPos = (t % 1.15) / 1.15;
+          const thud = Math.exp(-Math.pow((beatPos - 0.08) * 22, 2));
+          const grit = (Math.random() * 2 - 1) * Math.exp(-Math.pow((beatPos - 0.13) * 18, 2));
+          const body = Math.sin(2 * Math.PI * (72 - 18 * beatPos) * t);
+          sample = (body * 0.72 + grit * 0.3) * thud * (0.8 - 0.28 * p);
+        } else if (sfxId === 'chain_drag') {
+          const scrapeEnv = 0.25 + 0.75 * Math.pow(Math.sin(Math.PI * p * 2.3), 2);
+          const clink = Math.pow(Math.max(0, Math.sin(2 * Math.PI * 3.1 * t)), 18);
+          const metallic = Math.sin(2 * Math.PI * (620 + 95 * Math.sin(2 * Math.PI * 0.8 * t)) * t) * 0.36 +
+            Math.sin(2 * Math.PI * 1180 * t) * clink * 0.42;
+          sample = (metallic + (Math.random() * 2 - 1) * 0.25) * scrapeEnv * 0.55;
+        } else if (sfxId === 'door_slam') {
+          const hit = Math.exp(-p * 18);
+          const body = Math.sin(2 * Math.PI * (68 + 22 * Math.exp(-p * 9)) * t);
+          const rattle = (Math.random() * 2 - 1) * Math.exp(-Math.max(0, p - 0.08) * 9);
+          const creak = Math.sin(2 * Math.PI * (180 - 95 * p) * t) * Math.exp(-Math.pow((p - 0.18) * 8, 2));
+          sample = (body * hit * 0.8 + rattle * 0.22 + creak * 0.25) * 0.88;
+        } else if (sfxId === 'radio_ghost') {
+          const carrier = Math.sin(2 * Math.PI * (155 + 16 * Math.sin(2 * Math.PI * 0.23 * t)) * t);
+          const staticNoise = (Math.random() * 2 - 1) * (0.16 + 0.28 * Math.pow(Math.sin(2 * Math.PI * 2.8 * t), 16));
+          const whisper = Math.sin(2 * Math.PI * (430 + 85 * Math.sin(2 * Math.PI * 0.37 * t)) * t) *
+            (0.2 + 0.8 * Math.pow(Math.max(0, Math.sin(2 * Math.PI * 0.42 * t)), 5));
+          sample = (carrier * 0.18 + staticNoise + whisper * 0.25) * (0.65 + 0.35 * Math.sin(2 * Math.PI * 0.12 * t));
+        } else if (sfxId === 'cave_drips') {
+          const dripPhase = t % 1.37;
+          const drip = Math.exp(-dripPhase * 7) * Math.sin(2 * Math.PI * (780 - 260 * dripPhase) * t);
+          const resonance = Math.sin(2 * Math.PI * 145 * t) * Math.exp(-dripPhase * 2.2);
+          sample = (drip * 0.55 + resonance * 0.32) * (0.55 + 0.45 * Math.sin(2 * Math.PI * 0.09 * t));
+        } else if (sfxId === 'reverse_terror') {
+          const swell = p * p * p;
+          const shimmer = Math.sin(2 * Math.PI * (210 + 980 * p * p) * t) * 0.36;
+          const noise = (Math.random() * 2 - 1) * 0.4;
+          sample = (shimmer + noise) * swell * 0.72;
+        } else if (sfxId === 'floor_creak') {
+          const bend = 95 + 32 * Math.sin(2 * Math.PI * 0.38 * t) + 18 * Math.sin(2 * Math.PI * 1.4 * t);
+          const wood = Math.sin(2 * Math.PI * bend * t) * 0.6 +
+            Math.sin(2 * Math.PI * bend * 2.3 * t) * 0.2;
+          const strain = Math.pow(Math.max(0, Math.sin(2 * Math.PI * 0.63 * t)), 5);
+          sample = (wood + (Math.random() * 2 - 1) * 0.18) * (0.18 + strain) * (1 - 0.35 * p);
+        } else if (sfxId === 'eerie_howl') {
+          const pitch = 330 - 185 * p + 28 * Math.sin(2 * Math.PI * 0.5 * t);
+          const breath = (Math.random() * 2 - 1) * 0.22;
+          const howl = Math.sin(2 * Math.PI * pitch * t) * 0.55 +
+            Math.sin(2 * Math.PI * pitch * 1.51 * t) * 0.25 +
+            Math.sin(2 * Math.PI * pitch * 2.03 * t) * 0.12;
+          sample = (howl + breath) * Math.pow(Math.sin(Math.PI * p), 0.8) * 0.58;
+        }
         sample = Math.max(-1, Math.min(1, sample));
         view.setInt16(44 + i * 2, sample * 32767, true);
       }
