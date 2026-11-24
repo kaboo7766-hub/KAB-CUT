@@ -2358,6 +2358,20 @@
         `;
       }
 
+      if (clip.type === 'audio' && clip.track === 'audio') {
+        html += `
+          <div class="bg-studio-surface p-3 rounded-xl border border-emerald-500/30 space-y-2.5">
+            <div class="text-xs font-extrabold text-emerald-300"><i class="fa-solid fa-download ml-1"></i> تنزيل الصوت كملف مستقل</div>
+            <p class="text-[10px] text-gray-400">اختار الصيغة المناسبة لحفظ التسجيل على جهازك.</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="downloadAudioClip('mp3')" class="py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"><i class="fa-solid fa-file-audio ml-1"></i> MP3</button>
+              <button onclick="downloadAudioClip('wav')" class="py-2 rounded-lg bg-studio-bg border border-studio-border text-white text-xs font-bold"><i class="fa-solid fa-wave-square ml-1"></i> WAV</button>
+              <button onclick="downloadAudioClip('original')" class="col-span-2 py-2 rounded-lg bg-studio-bg border border-studio-border text-gray-200 text-xs font-bold"><i class="fa-solid fa-file-arrow-down ml-1"></i> تنزيل الملف الأصلي</button>
+            </div>
+            <p class="text-[10px] text-gray-500">MP3 مناسب للمشاركة وحجمه أصغر، وWAV مناسب لأعلى جودة للتحرير.</p>
+          </div>`;
+      }
+
       if (clip.type === 'image' && clip.track === 'video') {
         html += `<div class="bg-studio-surface p-3 rounded-xl border border-studio-border space-y-2"><div class="text-xs font-bold text-studio-cyan">إزالة خلفية الصورة (Chroma Key)</div><label class="text-[11px] text-gray-400">اللون المراد إزالته</label><input id="chromaKeyColor" type="color" value="#ffffff" class="w-full h-8 rounded" /><label class="text-[11px] text-gray-400">قوة الإزالة</label><input id="chromaKeyTolerance" type="range" min="10" max="180" value="48" class="w-full" /><button onclick="removeSelectedImageBackground()" class="w-full py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">إزالة اللون من الخلفية</button><button onclick="resetImageBackground()" class="w-full py-2 rounded-lg bg-studio-bg border border-studio-border text-xs">استعادة الصورة الأصلية</button><p class="text-[10px] text-gray-500">الأداة الحالية لإزالة الخلفيات ذات اللون المتقارب، مثل الأبيض أو الأخضر؛ وليست قصاً ذكياً تلقائياً للأشخاص.</p></div>`;
       }
@@ -4057,6 +4071,127 @@
     function finishVideoExport() {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
+      }
+    }
+
+    // --- EXPORT A SELECTED AUDIO-ONLY CLIP ---
+    let lameEncoderPromise = null;
+
+    function loadLameEncoder() {
+      if (window.lamejs) return Promise.resolve(window.lamejs);
+      if (lameEncoderPromise) return lameEncoderPromise;
+      lameEncoderPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js';
+        script.async = true;
+        script.onload = () => window.lamejs ? resolve(window.lamejs) : reject(new Error('تعذر تحميل محول MP3'));
+        script.onerror = () => reject(new Error('تعذر تحميل محول MP3؛ تحقق من اتصال الإنترنت'));
+        document.head.appendChild(script);
+      });
+      return lameEncoderPromise;
+    }
+
+    function audioBufferToWav(buffer) {
+      const channels = Math.min(2, buffer.numberOfChannels);
+      const frames = buffer.length;
+      const bytesPerSample = 2;
+      const dataSize = frames * channels * bytesPerSample;
+      const out = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(out);
+      const write = (offset, value) => { for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i)); };
+      write(0, 'RIFF'); view.setUint32(4, 36 + dataSize, true); write(8, 'WAVE');
+      write(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+      view.setUint16(22, channels, true); view.setUint32(24, buffer.sampleRate, true);
+      view.setUint32(28, buffer.sampleRate * channels * bytesPerSample, true);
+      view.setUint16(32, channels * bytesPerSample, true); view.setUint16(34, 16, true);
+      write(36, 'data'); view.setUint32(40, dataSize, true);
+      let offset = 44;
+      for (let i = 0; i < frames; i++) {
+        for (let ch = 0; ch < channels; ch++) {
+          const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+          view.setInt16(offset, sample < 0 ? sample * 32768 : sample * 32767, true);
+          offset += 2;
+        }
+      }
+      return new Blob([out], { type: 'audio/wav' });
+    }
+
+    async function downloadAudioClip(format) {
+      const clip = state.clips.find(c => c.id === state.selectedClipId && c.type === 'audio' && c.track === 'audio');
+      if (!clip) return showToast('حدد مقطع صوت فقط من التايم لاين أولاً');
+      const mediaItem = state.mediaPool.find(item => item.id === clip.mediaId);
+      const sourceUrl = (mediaItem && mediaItem.url) || (clip.mediaElement && (clip.mediaElement.currentSrc || clip.mediaElement.src));
+      if (!sourceUrl) return showToast('ملف الصوت الأصلي غير متاح للتنزيل');
+      const baseName = (clip.name || 'KAB-CUT-audio').replace(/[\\/:*?"<>|]+/g, '-').replace(/\\s+/g, '-').slice(0, 70) || 'KAB-CUT-audio';
+      let downloadBlob;
+      let extension = format;
+
+      try {
+        if (format === 'original') {
+          const response = await fetch(sourceUrl);
+          if (!response.ok) throw new Error('تعذر قراءة ملف الصوت الأصلي');
+          downloadBlob = await response.blob();
+          const mime = downloadBlob.type || '';
+          extension = mime.includes('wav') ? 'wav' : mime.includes('mpeg') ? 'mp3' : mime.includes('ogg') ? 'ogg' : 'webm';
+        } else {
+          const response = await fetch(sourceUrl);
+          if (!response.ok) throw new Error('تعذر قراءة ملف الصوت للتحويل');
+          const bytes = await response.arrayBuffer();
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) throw new Error('المتصفح لا يدعم تحويل الصوت');
+          const ctx = new AudioContextClass();
+          let decoded;
+          try { decoded = await ctx.decodeAudioData(bytes.slice(0)); }
+          finally { /* keep context open until decoding completes */ }
+
+          if (format === 'wav') {
+            downloadBlob = audioBufferToWav(decoded);
+          } else if (format === 'mp3') {
+            showToast('جاري تجهيز ملف MP3...');
+            const lame = await loadLameEncoder();
+            const channels = Math.min(2, decoded.numberOfChannels);
+            const encoder = new lame.Mp3Encoder(channels, decoded.sampleRate, 192);
+            const left = new Int16Array(decoded.length);
+            const right = channels > 1 ? new Int16Array(decoded.length) : null;
+            const leftData = decoded.getChannelData(0);
+            const rightData = channels > 1 ? decoded.getChannelData(1) : null;
+            for (let i = 0; i < decoded.length; i++) {
+              const l = Math.max(-1, Math.min(1, leftData[i]));
+              left[i] = l < 0 ? l * 32768 : l * 32767;
+              if (right) {
+                const v = Math.max(-1, Math.min(1, rightData[i]));
+                right[i] = v < 0 ? v * 32768 : v * 32767;
+              }
+            }
+            const chunks = [];
+            for (let i = 0; i < left.length; i += 1152) {
+              const l = left.subarray(i, i + 1152);
+              const r = right ? right.subarray(i, i + 1152) : l;
+              const encoded = encoder.encodeBuffer(l, r);
+              if (encoded.length) chunks.push(new Int8Array(encoded));
+            }
+            const end = encoder.flush();
+            if (end.length) chunks.push(new Int8Array(end));
+            downloadBlob = new Blob(chunks, { type: 'audio/mpeg' });
+          } else {
+            throw new Error('صيغة التنزيل غير مدعومة');
+          }
+          await ctx.close();
+        }
+
+        if (!downloadBlob || !downloadBlob.size) throw new Error('ملف الصوت الناتج فارغ');
+        const objectUrl = URL.createObjectURL(downloadBlob);
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = `${baseName}.${extension}`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+        showToast(`تم تجهيز تنزيل الصوت بصيغة ${extension.toUpperCase()}`);
+      } catch (err) {
+        console.error('Audio download failed:', err);
+        showToast(err && err.message ? err.message : 'تعذر تجهيز ملف الصوت للتنزيل');
       }
     }
 
