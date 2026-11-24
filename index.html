@@ -1172,7 +1172,15 @@
       { id: 'trend_pop', name: 'فرقعة تريند (TikTok Pop)', icon: 'fa-bubble', color: 'text-amber-400', dur: 0.6 },
       { id: 'riser_tension', name: 'تصاعد تشويق درامي (Riser)', icon: 'fa-arrow-trend-up', color: 'text-purple-400', dur: 3.0 },
       { id: 'cyber_laser', name: 'ليزر سايبربانك (Laser)', icon: 'fa-bolt', color: 'text-emerald-400', dur: 1.0 },
-      { id: 'cash_ding', name: 'رنين نجاح / كاش (Ding)', icon: 'fa-coins', color: 'text-yellow-400', dur: 1.4 }
+      { id: 'cash_ding', name: 'رنين نجاح / كاش (Ding)', icon: 'fa-coins', color: 'text-yellow-400', dur: 1.4 },
+      { id: 'horror_heartbeat', name: 'نبضات قلب مرعبة', icon: 'fa-heart-pulse', color: 'text-rose-400', dur: 4.0 },
+      { id: 'horror_drone', name: 'همهمة رعب مظلمة', icon: 'fa-ghost', color: 'text-violet-400', dur: 5.0 },
+      { id: 'ghost_wind', name: 'رياح أشباح وهمسات هواء', icon: 'fa-wind', color: 'text-sky-300', dur: 4.5 },
+      { id: 'metal_creak', name: 'صرير باب قديم', icon: 'fa-door-closed', color: 'text-amber-300', dur: 3.2 },
+      { id: 'suspense_hit', name: 'ضربة مفاجأة مرعبة', icon: 'fa-bolt', color: 'text-red-400', dur: 2.4 },
+      { id: 'eerie_chimes', name: 'أجراس غامضة', icon: 'fa-bell', color: 'text-fuchsia-300', dur: 4.0 },
+      { id: 'dark_riser', name: 'تصاعد رعب قبل المفاجأة', icon: 'fa-arrow-trend-up', color: 'text-purple-300', dur: 4.0 },
+      { id: 'underwater_dread', name: 'صدى أعماق مخيف', icon: 'fa-water', color: 'text-cyan-300', dur: 5.0 },
     ];
 
     // --- ARABIC DIALECT & VOICE PERSONAS FOR AI DUBBING / TTS ---
@@ -4408,6 +4416,52 @@
           const bell1 = Math.sin(2 * Math.PI * 1318.5 * t);
           const bell2 = Math.sin(2 * Math.PI * 2637 * t) * 0.5;
           sample = (bell1 + bell2) * Math.exp(-p * 5) * 0.7;
+        } else if (sfxId === 'horror_heartbeat') {
+          const beat = Math.pow(Math.max(0, Math.sin(2 * Math.PI * 1.15 * t)), 10);
+          const thump = Math.sin(2 * Math.PI * (48 + beat * 18) * t);
+          sample = thump * beat * (0.45 + 0.2 * Math.sin(2 * Math.PI * 0.28 * t));
+        } else if (sfxId === 'horror_drone') {
+          const fade = Math.min(1, p * 5) * Math.min(1, (1 - p) * 5);
+          const wobble = Math.sin(2 * Math.PI * 0.22 * t);
+          sample = (Math.sin(2 * Math.PI * (42 + wobble * 5) * t) * 0.55 +
+            Math.sin(2 * Math.PI * 63.5 * t) * 0.28 +
+            Math.sin(2 * Math.PI * 87 * t) * 0.17) * fade * 0.72;
+        } else if (sfxId === 'ghost_wind') {
+          const swell = 0.25 + 0.75 * Math.pow(Math.sin(Math.PI * p), 1.4);
+          const noise = (Math.random() * 2 - 1) * 0.55;
+          const whistle = Math.sin(2 * Math.PI * (310 + 180 * Math.sin(2 * Math.PI * 0.31 * t)) * t) * 0.35;
+          sample = (noise + whistle) * swell * 0.48;
+        } else if (sfxId === 'metal_creak') {
+          const bend = 260 + 190 * Math.sin(2 * Math.PI * (0.18 + p * 0.32) * t);
+          const rasp = Math.sin(2 * Math.PI * bend * t) * 0.55 +
+            Math.sin(2 * Math.PI * bend * 2.03 * t) * 0.25 +
+            (Math.random() * 2 - 1) * 0.2;
+          sample = rasp * Math.pow(Math.sin(Math.PI * p), 1.2) * 0.62;
+        } else if (sfxId === 'suspense_hit') {
+          const impact = Math.exp(-p * 5.5);
+          const low = Math.sin(2 * Math.PI * (52 + 24 * Math.exp(-p * 9)) * t);
+          const crack = (Math.random() * 2 - 1) * Math.exp(-p * 24);
+          sample = (low * 0.78 + crack * 0.32) * impact * 0.9;
+        } else if (sfxId === 'eerie_chimes') {
+          const notes = [392, 523.25, 783.99, 622.25];
+          let chime = 0;
+          for (let n = 0; n < notes.length; n++) {
+            const start = n * 0.72;
+            const local = t - start;
+            if (local >= 0) chime += Math.sin(2 * Math.PI * notes[n] * local) * Math.exp(-local * 2.7) * 0.22;
+          }
+          sample = chime * 0.7;
+        } else if (sfxId === 'dark_riser') {
+          const rise = p * p;
+          const freq = 70 + rise * 1250;
+          const tremolo = 0.72 + 0.28 * Math.sin(2 * Math.PI * 8 * t);
+          sample = (Math.sin(2 * Math.PI * freq * t) * 0.72 +
+            (Math.random() * 2 - 1) * 0.18) * rise * tremolo * 0.8;
+        } else if (sfxId === 'underwater_dread') {
+          const pulse = Math.sin(2 * Math.PI * 0.65 * t);
+          const deep = Math.sin(2 * Math.PI * (58 + pulse * 12) * t);
+          const bubbles = Math.sin(2 * Math.PI * (170 + 35 * Math.sin(2 * Math.PI * 0.8 * t)) * t);
+          sample = (deep * 0.72 + bubbles * 0.18) * (0.65 + 0.35 * Math.sin(2 * Math.PI * 0.2 * t)) * 0.72;
         }
 
         sample = Math.max(-1, Math.min(1, sample));
