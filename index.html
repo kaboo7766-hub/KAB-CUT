@@ -1773,7 +1773,7 @@
               <div class="flex items-center justify-between">
                 <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
                   <i class="fa-solid fa-microphone-lines text-rose-400"></i>
-                  <span>مسجل الصوت ومُحسِّن النبرة السحري</span>
+                  <span>مسجل الصوت وتنقية الضوضاء تلقائيًا</span>
                 </h3>
                 <span id="recTimerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/50 text-gray-400">
                   ${state.isRecordingVoice ? 'جاري التسجيل... ' + state.recSeconds + 's' : 'جاهز'}
@@ -1794,6 +1794,7 @@
                 </label>
               </div>
 
+              <div class="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-2 text-[10px] text-emerald-200"><i class="fa-solid fa-wand-magic-sparkles ml-1"></i> تنقية تلقائية أثناء التسجيل: تقليل ضوضاء الميكروفون والهواء والفرقعة، مع ضبط مستوى الصوت.</div>
               <!-- Quick Magic Voice Beautifier -->
               <div class="pt-1.5 border-t border-studio-border/60 space-y-1.5">
                 <div class="flex items-center justify-between">
@@ -4059,10 +4060,12 @@
       }
     }
 
-    // --- VOICEOVER RECORDER, TONE CHANGER & TREND SFX ENGINE ---
+    // --- VOICEOVER RECORDER WITH LIVE NOISE REDUCTION ---
     let voiceMediaRecorder = null;
     let voiceChunks = [];
     let recInterval = null;
+    let voiceRecordingStream = null;
+    let voiceRecordingContext = null;
 
     async function toggleVoiceRecording() {
       if (state.isRecordingVoice) {
@@ -4076,24 +4079,88 @@
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Ask the browser/OS for its built-in microphone noise and echo suppression.
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1
+          }
+        });
+        voiceRecordingStream = stream;
         voiceChunks = [];
-        voiceMediaRecorder = new MediaRecorder(stream);
+
+        // Record a cleaned signal: remove low-frequency rumble, tame harsh highs,
+        // and gently control peaks without changing the original microphone stream.
+        let recordingStream = stream;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass && window.MediaStreamAudioSourceNode) {
+          voiceRecordingContext = new AudioContextClass();
+          if (voiceRecordingContext.state === 'suspended') await voiceRecordingContext.resume();
+          const source = voiceRecordingContext.createMediaStreamSource(stream);
+          const highPass = voiceRecordingContext.createBiquadFilter();
+          highPass.type = 'highpass';
+          highPass.frequency.value = 85;
+          highPass.Q.value = 0.707;
+
+          const lowPass = voiceRecordingContext.createBiquadFilter();
+          lowPass.type = 'lowpass';
+          lowPass.frequency.value = 14500;
+          lowPass.Q.value = 0.707;
+
+          const compressor = voiceRecordingContext.createDynamicsCompressor();
+          compressor.threshold.value = -20;
+          compressor.knee.value = 18;
+          compressor.ratio.value = 3;
+          compressor.attack.value = 0.006;
+          compressor.release.value = 0.22;
+
+          const output = voiceRecordingContext.createMediaStreamDestination();
+          source.connect(highPass);
+          highPass.connect(lowPass);
+          lowPass.connect(compressor);
+          compressor.connect(output);
+          recordingStream = output.stream;
+        }
+
+        const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+        const supportedMime = mimeTypes.find(type => window.MediaRecorder &&
+          MediaRecorder.isTypeSupported(type));
+        voiceMediaRecorder = new MediaRecorder(recordingStream, supportedMime
+          ? { mimeType: supportedMime, audioBitsPerSecond: 128000 }
+          : undefined);
 
         voiceMediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) voiceChunks.push(e.data);
         };
 
-        voiceMediaRecorder.onstop = () => {
+        voiceMediaRecorder.onerror = () => {
+          showToast('حدث خطأ أثناء تسجيل الصوت. حاول مرة أخرى');
+        };
+
+        voiceMediaRecorder.onstop = async () => {
+          const actualMime = voiceMediaRecorder.mimeType || 'audio/webm';
+          const blob = new Blob(voiceChunks, { type: actualMime });
           stream.getTracks().forEach(t => t.stop());
-          const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+          if (recordingStream !== stream) recordingStream.getTracks().forEach(t => t.stop());
+          if (voiceRecordingContext && voiceRecordingContext.state !== 'closed') {
+            try { await voiceRecordingContext.close(); } catch (_) {}
+          }
+          voiceRecordingContext = null;
+          voiceRecordingStream = null;
+
+          if (!blob.size) {
+            showToast('لم يتم التقاط صوت. تحقق من الميكروفون وحاول مجددًا');
+            return;
+          }
           const url = URL.createObjectURL(blob);
           const aud = new Audio(url);
           const dur = Math.max(2, state.recSeconds || 4);
           const item = {
             id: 'rec_' + Date.now(),
             type: 'audio',
-            name: `تسجيل صوتي (${dur}s)`,
+            name: `تسجيل صوتي نقي (${dur}s)`,
             url,
             element: aud,
             duration: dur
@@ -4102,10 +4169,10 @@
           addAudioClipToTimeline(item);
           const defaultPro = GLOBAL_50_VOICES.find(v => v.id === state.selectedVoiceId) || GLOBAL_50_VOICES[0];
           applyVoiceProfileToClip(defaultPro.id);
-          showToast(`تم حفظ التسجيل وتحسينه تلقائياً بتون "${defaultPro.name.split('(')[0].trim()}"!`);
+          showToast(`تم حفظ التسجيل وإزالة الضوضاء وتحسين الصوت تلقائيًا بتون "${defaultPro.name.split('(')[0].trim()}"`);
         };
 
-        voiceMediaRecorder.start();
+        voiceMediaRecorder.start(250);
         state.isRecordingVoice = true;
         state.recSeconds = 0;
         switchTab('audio');
@@ -4113,10 +4180,18 @@
         recInterval = setInterval(() => {
           state.recSeconds++;
           const badge = document.getElementById('recTimerBadge');
-          if (badge) badge.textContent = `جاري التسجيل... ${state.recSeconds}s`;
+          if (badge) badge.textContent = `جاري التسجيل مع تنقية الصوت... ${state.recSeconds}s`;
         }, 1000);
       } catch (err) {
-        showToast('يرجى السماح بالوصول إلى الميكروفون للتسجيل');
+        if (voiceRecordingStream) voiceRecordingStream.getTracks().forEach(t => t.stop());
+        if (voiceRecordingContext && voiceRecordingContext.state !== 'closed') {
+          try { await voiceRecordingContext.close(); } catch (_) {}
+        }
+        voiceRecordingStream = null;
+        voiceRecordingContext = null;
+        showToast(err && err.name === 'NotAllowedError'
+          ? 'يرجى السماح بالوصول إلى الميكروفون للتسجيل'
+          : 'تعذر بدء التسجيل أو تنقية الصوت في هذا المتصفح');
       }
     }
 
