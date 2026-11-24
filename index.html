@@ -1192,7 +1192,7 @@
       { id: 'cave_drips', name: 'قطرات ماء في كهف', icon: 'fa-droplet', color: 'text-cyan-200', dur: 6.0 },
       { id: 'reverse_terror', name: 'سحب عكسي قبل الفزع', icon: 'fa-arrow-up-wide-short', color: 'text-violet-300', dur: 5.0 },
       { id: 'floor_creak', name: 'أرضية خشب تئن', icon: 'fa-house', color: 'text-yellow-200', dur: 4.0 },
-      { id: 'eerie_howl', name: 'عواء مخيف في الضباب', icon: 'fa-wolf-pack-battalion', color: 'text-blue-200', dur: 6.5 },
+      { id: 'eerie_howl', name: 'عواء مخيف في الضباب', icon: 'fa-moon', color: 'text-blue-200', dur: 6.5 },
     ];
 
     // --- ARABIC DIALECT & VOICE PERSONAS FOR AI DUBBING / TTS ---
@@ -4474,8 +4474,6 @@
           const deep = Math.sin(2 * Math.PI * (58 + pulse * 12) * t);
           const bubbles = Math.sin(2 * Math.PI * (170 + 35 * Math.sin(2 * Math.PI * 0.8 * t)) * t);
           sample = (deep * 0.72 + bubbles * 0.18) * (0.65 + 0.35 * Math.sin(2 * Math.PI * 0.2 * t)) * 0.72;
-        }
-
         } else if (sfxId === 'horror_breath') {
           const phase = (t % 2.8) / 2.8;
           const inhale = phase < 0.48 ? Math.sin(Math.PI * phase / 0.48) : 0;
