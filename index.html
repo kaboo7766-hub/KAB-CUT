@@ -131,6 +131,49 @@
     .brand-glow { animation: pulseGlow 3s infinite ease-in-out; }
     @media (max-width: 767px) { header { height:48px !important; min-height:48px; padding:0 6px !important; } header .brand-glow { padding:4px 7px !important; } header .brand-glow span { font-size:13px !important; } main > section:first-child { height:28vh !important; min-height:180px; max-height:250px; } main > section:nth-child(2) { height:auto !important; min-height:220px; max-height:none; flex:1 1 auto; } main > section nav { min-height:58px; max-height:64px; justify-content:flex-start; gap:3px; padding:3px; } main > section nav button { min-width:54px; min-height:54px; padding:5px 4px !important; } #drawerContainer { min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px !important; } #previewWrapper { min-height:150px; padding:6px !important; } footer { height:300px !important; min-height:300px; } #timelineScrollArea { min-height:0; touch-action:pan-y; } #timelineContent { min-width:1200px; } #timelineContent [id^="track-"] { min-height:34px; } #timelineContent [id="track-video"] { min-height:48px; } .brand-glow { animation:none !important; } .clip-handle { width:12px; min-width:12px; } #timelineScrollArea .cursor-grab { touch-action:none; } }
     @media (max-width:380px) { header .bg-studio-surface select { max-width:104px; font-size:10px; } main > section:first-child { height:26vh !important; } }
+    /* MontaSync mobile usability refresh */
+    @media (max-width: 767px) {
+      body { height:100dvh !important; overflow:hidden; }
+      header { gap:4px; }
+      header > div { min-width:0; }
+      header button { min-height:40px; white-space:nowrap; }
+      main { min-height:0; }
+      main > section:first-child { height:36dvh !important; min-height:190px; max-height:300px; flex-direction:column !important; }
+      main > section:first-child nav { order:0; width:100%; min-height:58px; height:58px; flex-direction:row !important; border-left:0; border-bottom:1px solid #2e3440; overflow-x:auto; overflow-y:hidden; justify-content:flex-start; padding:5px; gap:5px; }
+      main > section:first-child nav button { flex:0 0 64px; min-width:64px; min-height:48px; height:48px; border-radius:10px; }
+      main > section:first-child nav button span { font-size:10px; white-space:nowrap; }
+      #drawerContainer { order:1; flex:1 1 0; width:100%; padding:10px !important; overflow-y:auto; }
+      main > section:nth-child(2) { flex:1 1 0; min-height:140px; height:auto !important; }
+      #previewWrapper { min-height:0; padding:5px !important; }
+      #canvasFrame { max-width:100%; max-height:100%; border-radius:8px; }
+      #studioCanvas { max-width:100%; max-height:100%; touch-action:none; }
+      footer { height:250px !important; min-height:250px; max-height:34dvh; }
+      footer > div:first-child { height:36px; min-height:36px; }
+      footer > div:first-child button { min-height:32px; padding:5px !important; }
+      footer > div:nth-child(2) { height:38px; min-height:38px; padding-inline:6px; }
+      footer > div:nth-child(2) button { min-height:34px; white-space:nowrap; }
+      #timelineScrollArea { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; }
+      #timelineContent [id^="track-"] { min-height:38px; }
+      #timelineContent [id="track-video"] { min-height:50px; }
+      .clip-handle { width:14px; min-width:14px; }
+      button, label, select { min-height:40px; }
+      input[type="range"] { min-height:24px; }
+      #mpOpen { top:auto !important; bottom:258px !important; left:8px !important; }
+      #mpStatus { bottom:250px !important; left:8px !important; }
+    }
+    @media (max-width:420px) {
+      header .brand-glow { display:none !important; }
+      header button { padding-inline:8px !important; font-size:11px !important; }
+      main > section:first-child { height:38dvh !important; min-height:190px; }
+      footer { height:245px !important; min-height:245px; }
+      #timelineContent { min-width:900px; }
+    }
+    @media (max-width:767px) and (orientation:landscape) {
+      main > section:first-child { height:42dvh !important; }
+      main > section:nth-child(2) { min-height:120px; }
+      footer { height:220px !important; max-height:38dvh; min-height:180px; }
+    }
+
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
     body.kab-low-power .brand-glow, body.kab-low-power .shadow-2xl, body.kab-low-power .shadow-lg { animation:none !important; box-shadow:none !important; }
     body.kab-low-power .backdrop-blur-sm { backdrop-filter:none !important; }
